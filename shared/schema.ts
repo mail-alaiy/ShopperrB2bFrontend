@@ -23,8 +23,6 @@ export const users = pgTable("users", {
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
-  isVerified: true,
-  role: true,
 });
 
 // Schema used for user registration

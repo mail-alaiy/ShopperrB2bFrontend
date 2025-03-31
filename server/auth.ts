@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User as SchemaUser, LoginUser, RegisterUser } from "@shared/schema";
+import { User, LoginUser, RegisterUser } from "@shared/schema";
 import MemoryStore from "memorystore";
 
 declare global {
@@ -142,7 +142,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate("local", (err: Error, user: User, info: any) => {
+    passport.authenticate("local", (err: Error, user: Express.User, info: any) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({ message: info?.message || "Authentication failed" });
@@ -171,7 +171,7 @@ export function setupAuth(app: Express) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     // Return user info but omit password
-    const { password, ...userWithoutPassword } = req.user as User;
+    const { password, ...userWithoutPassword } = req.user as Express.User;
     res.json(userWithoutPassword);
   });
 

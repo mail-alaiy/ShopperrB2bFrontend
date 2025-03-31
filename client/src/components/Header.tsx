@@ -7,7 +7,8 @@ import {
   ShoppingCartIcon, 
   UserIcon, 
   PackageIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  LogIn
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +20,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CategorySidebar from "@/components/CategorySidebar";
 import { CartItem, Product } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { user, logoutMutation } = useAuth();
   
   const { data: cartItems = [] } = useQuery<(CartItem & { product: Product })[]>({
     queryKey: ["/api/cart"],
@@ -85,7 +88,7 @@ export default function Header() {
           {/* Account & Orders */}
           <div className="flex items-center">
             <div className="hidden md:block text-sm mx-2">
-              <div>Hello, Business Account</div>
+              <div>{user ? `Hello, ${user.name}` : 'Hello, Sign in'}</div>
               <div className="font-bold">
                 <DropdownMenu>
                   <DropdownMenuTrigger className="focus:outline-none flex items-center">
@@ -93,19 +96,38 @@ export default function Header() {
                     <ChevronDownIcon className="ml-1 h-4 w-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <UserIcon className="mr-2 h-4 w-4" /> Your Account
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <PackageIcon className="mr-2 h-4 w-4" /> Your Orders
-                    </DropdownMenuItem>
+                    {user ? (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/profile">
+                            <UserIcon className="mr-2 h-4 w-4" /> Your Account
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/orders">
+                            <PackageIcon className="mr-2 h-4 w-4" /> Your Orders
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                          <LogIn className="mr-2 h-4 w-4" /> Sign Out
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link href="/auth">
+                          <LogIn className="mr-2 h-4 w-4" /> Sign In
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
             <div className="hidden md:block text-sm mx-2">
               <div>Returns</div>
-              <div className="font-bold">& Orders</div>
+              <div className="font-bold">
+                <Link href={user ? "/orders" : "/auth"}>& Orders</Link>
+              </div>
             </div>
             <Link href="/cart" className="flex items-center mx-2">
                 <ShoppingCartIcon className="h-6 w-6" />
@@ -178,21 +200,45 @@ export default function Header() {
       
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-b">
+        <div className="md:hidden bg-white border-b text-black">
           <div className="container mx-auto px-4 py-2">
             <div className="flex flex-col">
-              <div className="py-2 border-b">
-                <div className="font-bold flex items-center">
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  Account & Lists
-                </div>
-              </div>
-              <div className="py-2 border-b">
+              {user ? (
+                <>
+                  <Link href="/profile" className="py-2 border-b">
+                    <div className="font-bold flex items-center">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      Your Account ({user.name})
+                    </div>
+                  </Link>
+                  <Link href="/orders" className="py-2 border-b">
+                    <div className="font-bold flex items-center">
+                      <PackageIcon className="mr-2 h-4 w-4" />
+                      Your Orders
+                    </div>
+                  </Link>
+                  <button 
+                    onClick={() => logoutMutation.mutate()} 
+                    className="py-2 border-b text-left font-bold flex items-center"
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link href="/auth" className="py-2 border-b">
+                  <div className="font-bold flex items-center">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In / Register
+                  </div>
+                </Link>
+              )}
+              <Link href={user ? "/orders" : "/auth"} className="py-2 border-b">
                 <div className="font-bold flex items-center">
                   <PackageIcon className="mr-2 h-4 w-4" />
                   Returns & Orders
                 </div>
-              </div>
+              </Link>
               {categories.map((category, index) => (
                 <Link 
                   key={index} 
