@@ -93,107 +93,143 @@ export default function Home() {
         </Carousel>
       </div>
 
-      {/* Category Grid */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Category Grid - Enhanced */}
+      <div className="mb-16">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Shop by Category</h2>
+          <Link href="/categories">
+            <a className="text-blue-600 hover:underline text-sm flex items-center">
+              See all categories <ChevronRightIcon className="w-4 h-4 ml-1" />
+            </a>
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categories.map((category, index) => (
             <Link key={index} href={category.url}>
-              <a className="flex flex-col items-center justify-center p-4 border rounded-lg hover:shadow-md transition duration-200 bg-white">
-                <div className="mb-3 text-blue-600">
-                  {category.icon}
+              <a className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
+                {/* Gradient background with hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white group-hover:from-blue-100 transition-all duration-300"></div>
+                
+                {/* Category content */}
+                <div className="relative z-10 flex flex-col items-center p-6 h-full">
+                  <div className="p-4 mb-3 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 group-hover:text-blue-700 transition-all duration-300 transform group-hover:scale-110">
+                    {category.icon}
+                  </div>
+                  <span className="text-center font-semibold text-gray-800 group-hover:text-black">{category.name}</span>
+                  
+                  {/* Visual indicator for hover */}
+                  <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="text-xs text-blue-600 flex items-center">
+                      Shop now <ChevronRightIcon className="w-3 h-3 ml-1" />
+                    </span>
+                  </div>
                 </div>
-                <span className="text-center font-medium">{category.name}</span>
               </a>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Business Deals Banner */}
-      <div className="bg-blue-700 text-white rounded-lg p-6 mb-8 shadow-md">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Shopperr B2B</h1>
-        <p className="mb-4">Your one-stop shop for business and office supplies</p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button 
-            variant="secondary" 
-            className="bg-amber-400 hover:bg-amber-500 text-blue-900 font-bold"
-          >
-            Shop Business Deals
-          </Button>
-          <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
-            Learn About Volume Discounts
-          </Button>
-        </div>
-      </div>
+
 
       {/* Featured Deals Section */}
-      <h2 className="text-2xl font-bold mb-6">Featured Business Deals</h2>
+      <div className="mb-16">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Featured Business Deals</h2>
+          <Link href="/deals">
+            <a className="text-blue-600 hover:underline text-sm flex items-center">
+              View all deals <ChevronRightIcon className="w-4 h-4 ml-1" />
+            </a>
+          </Link>
+        </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="border rounded-md p-4">
-              <Skeleton className="h-48 w-full mb-4" />
-              <Skeleton className="h-6 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-1/2 mb-4" />
-              <Skeleton className="h-6 w-1/3 mb-2" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products?.map((product) => (
-            <div key={product.id} className="border rounded-md p-4 hover:shadow-md transition duration-200">
-              <Link href={`/products/${product.id}`}>
-                <a className="block">
-                  <div className="h-48 flex items-center justify-center mb-4">
-                    <img 
-                      src={product.images[0]} 
-                      alt={product.name} 
-                      className="max-h-full max-w-full object-contain" 
-                    />
-                  </div>
-                  <h3 className="text-lg font-semibold text-blue-600 hover:underline mb-1 line-clamp-2">
-                    {product.name}
-                  </h3>
-                  <div className="flex text-amber-400 mb-2">
-                    {[...Array(Math.floor(product.rating))].map((_, i) => (
-                      <StarIcon key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                    {product.rating % 1 >= 0.5 && (
-                      <StarHalfIcon className="w-4 h-4 fill-current" />
-                    )}
-                    <span className="text-gray-500 text-sm ml-1">({product.ratingCount})</span>
-                  </div>
-                  <div className="mb-3">
-                    <span className="text-gray-500 line-through text-sm mr-2">${product.regularPrice.toFixed(2)}</span>
-                    <span className="text-lg font-bold">${product.salePrice.toFixed(2)}</span>
-                    {product.regularPrice > product.salePrice && (
-                      <span className="text-green-600 text-sm ml-2">
-                        Save {Math.round((1 - product.salePrice / product.regularPrice) * 100)}%
-                      </span>
-                    )}
-                  </div>
-                </a>
-              </Link>
-              <Button className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900">
-                <ShoppingCartIcon className="w-4 h-4 mr-2" />
-                Add to Cart
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-4">
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2 mb-3" />
+                  <Skeleton className="h-5 w-2/3 mb-3" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products?.map((product) => (
+              <div key={product.id} className="group border rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 bg-white">
+                <Link href={`/products/${product.id}`}>
+                  <a className="block">
+                    <div className="relative">
+                      <div className="h-48 flex items-center justify-center p-4 bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.name} 
+                          className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-transform duration-300" 
+                        />
+                      </div>
+                      
+                      {/* Discount badge */}
+                      {product.regularPrice > product.salePrice && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          {Math.round((1 - product.salePrice / product.regularPrice) * 100)}% OFF
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors mb-1 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      
+                      <div className="flex text-amber-400 mb-2">
+                        {[...Array(Math.floor(product.rating))].map((_, i) => (
+                          <StarIcon key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                        {product.rating % 1 >= 0.5 && (
+                          <StarHalfIcon className="w-4 h-4 fill-current" />
+                        )}
+                        <span className="text-gray-500 text-sm ml-1">({product.ratingCount})</span>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <div className="flex items-baseline">
+                          <span className="text-lg font-bold text-gray-900">${product.salePrice.toFixed(2)}</span>
+                          {product.regularPrice > product.salePrice && (
+                            <span className="text-gray-500 line-through text-sm ml-2">${product.regularPrice.toFixed(2)}</span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Volume pricing available
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                </Link>
+                
+                <div className="px-4 pb-4">
+                  <Button className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-medium">
+                    <ShoppingCartIcon className="w-4 h-4 mr-2" />
+                    Add to Cart
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       
-      {/* Recently Viewed & Recommended Section */}
-      <div className="border-t pt-8 mt-12">
+      {/* Recommended Section - Enhanced */}
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 mt-12 mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">Recommended For You</h2>
           <Link href="/recommendations">
             <a className="text-blue-600 hover:underline flex items-center">
-              See more recommendations <ChevronRightIcon className="w-4 h-4 ml-1" />
+              See all recommendations <ChevronRightIcon className="w-4 h-4 ml-1" />
             </a>
           </Link>
         </div>
@@ -201,7 +237,7 @@ export default function Home() {
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="border rounded-md p-3">
+              <div key={i} className="bg-white rounded-lg shadow-sm p-3">
                 <Skeleton className="h-32 w-full mb-2" />
                 <Skeleton className="h-4 w-3/4 mb-1" />
                 <Skeleton className="h-4 w-1/2" />
@@ -211,17 +247,17 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {products?.slice(0, 6).map((product) => (
-              <div key={`rec-${product.id}`} className="border rounded-md p-3 hover:shadow-md transition duration-200">
+              <div key={`rec-${product.id}`} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
                 <Link href={`/products/${product.id}`}>
-                  <a className="block">
-                    <div className="h-32 flex items-center justify-center mb-2">
+                  <a className="block p-3">
+                    <div className="h-32 flex items-center justify-center mb-3 bg-white">
                       <img 
                         src={product.images[0]} 
                         alt={product.name} 
-                        className="max-h-full max-w-full object-contain" 
+                        className="max-h-full max-w-full object-contain transform hover:scale-105 transition-transform duration-300" 
                       />
                     </div>
-                    <h3 className="text-sm font-medium text-blue-600 hover:underline line-clamp-2">
+                    <h3 className="text-sm font-medium text-gray-800 hover:text-blue-600 transition-colors line-clamp-2">
                       {product.name}
                     </h3>
                     <div className="flex text-amber-400 text-xs mt-1">
@@ -230,8 +266,9 @@ export default function Home() {
                       ))}
                       <span className="text-gray-500 text-xs ml-1">({product.ratingCount})</span>
                     </div>
-                    <div className="mt-1">
+                    <div className="mt-1 flex justify-between items-center">
                       <span className="font-bold text-sm">${product.salePrice.toFixed(2)}</span>
+                      <span className="text-xs text-blue-500 whitespace-nowrap">Quick View</span>
                     </div>
                   </a>
                 </Link>
@@ -239,6 +276,12 @@ export default function Home() {
             ))}
           </div>
         )}
+        
+        <div className="mt-6 text-center">
+          <Button variant="outline" className="bg-white">
+            Explore More Recommendations
+          </Button>
+        </div>
       </div>
     </div>
   );
