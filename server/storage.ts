@@ -93,14 +93,26 @@ export class MemStorage implements IStorage {
   }
   
   async getProductsInCategory(category: string): Promise<Product[]> {
+    // Convert kebab-case to space-separated words with capitalization
+    const formattedCategory = category
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
     return Array.from(this.products.values()).filter(
-      (product) => product.category === category
+      (product) => product.category.toLowerCase() === formattedCategory.toLowerCase()
     );
   }
   
   async getProductsInSubcategory(subcategory: string): Promise<Product[]> {
+    // Convert kebab-case to space-separated words with capitalization
+    const formattedSubcategory = subcategory
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
     return Array.from(this.products.values()).filter(
-      (product) => product.subcategory === subcategory
+      (product) => product.subcategory.toLowerCase() === formattedSubcategory.toLowerCase()
     );
   }
   

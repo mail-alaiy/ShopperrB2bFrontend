@@ -17,22 +17,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CategorySidebar from "@/components/CategorySidebar";
+import { CartItem, Product } from "@shared/schema";
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
   const [location] = useLocation();
   
-  const { data: cartItems } = useQuery({
+  const { data: cartItems = [] } = useQuery<(CartItem & { product: Product })[]>({
     queryKey: ["/api/cart"],
   });
   
-  const cartItemCount = cartItems?.length || 0;
+  const cartItemCount = cartItems.length || 0;
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Implement search functionality
     console.log("Searching for:", searchTerm);
+  };
+  
+  const toggleCategorySidebar = () => {
+    setIsCategorySidebarOpen(!isCategorySidebarOpen);
   };
   
   const categories = [
@@ -147,16 +154,30 @@ export default function Header() {
       {/* Secondary navigation */}
       <div className="bg-[#232f3e] py-1 px-4">
         <div className="container mx-auto flex items-center text-sm text-white overflow-x-auto">
-          <a href="#" className="mr-4 whitespace-nowrap flex items-center">
+          <button 
+            onClick={toggleCategorySidebar}
+            className="mr-4 whitespace-nowrap flex items-center cursor-pointer"
+          >
             <MenuIcon className="mr-1 h-4 w-4" /> All Categories
-          </a>
+          </button>
           {categories.map((category, index) => (
-            <a key={index} href="#" className="mr-4 whitespace-nowrap hidden md:block">
-              {category}
-            </a>
+            <Link 
+              key={index} 
+              href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+            >
+              <a className="mr-4 whitespace-nowrap hidden md:block hover:text-[#febd69]">
+                {category}
+              </a>
+            </Link>
           ))}
         </div>
       </div>
+      
+      {/* Category Sidebar */}
+      <CategorySidebar 
+        isOpen={isCategorySidebarOpen} 
+        onClose={() => setIsCategorySidebarOpen(false)} 
+      />
       
       {/* Mobile menu */}
       {isMobileMenuOpen && (
@@ -176,9 +197,14 @@ export default function Header() {
                 </div>
               </div>
               {categories.map((category, index) => (
-                <a key={index} href="#" className="py-2 border-b">
-                  {category}
-                </a>
+                <Link 
+                  key={index} 
+                  href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <a className="py-2 border-b block">
+                    {category}
+                  </a>
+                </Link>
               ))}
             </div>
           </div>
