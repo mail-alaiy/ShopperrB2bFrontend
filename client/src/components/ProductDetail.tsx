@@ -5,9 +5,9 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import ProductImages from "@/components/ProductImages";
 import DynamicPricing from "@/components/DynamicPricing";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { StarIcon, StarHalfIcon, ShoppingCartIcon, BoltIcon, HeartIcon, BookmarkIcon, ShareIcon, FileTextIcon, CheckCircleIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StarIcon, StarHalfIcon, ShoppingCartIcon, BoltIcon, HeartIcon, BookmarkIcon, ShareIcon, FileTextIcon, CheckCircleIcon, InfoIcon } from "lucide-react";
 
 interface ProductDetailProps {
   product: any;
@@ -18,20 +18,35 @@ interface ProductDetailProps {
 export default function ProductDetail({ product, priceTiers, isLoadingPriceTiers }: ProductDetailProps) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
-  const [shippingOption, setShippingOption] = useState("standard");
+  const [shippingSource, setShippingSource] = useState("ex-china");
   const [selectedVariation, setSelectedVariation] = useState(
     product.variations.find((v: any) => v.selected) || product.variations[0]
   );
   
-  // Determine which price to display based on quantity
+  // Determine which price to display based on quantity and shipping source
   const calculatePrice = () => {
-    if (!priceTiers || priceTiers.length === 0) return product.salePrice;
+    // First get base price from quantity tiers
+    let basePrice = product.salePrice;
+    if (priceTiers && priceTiers.length > 0) {
+      const tier = priceTiers.find(
+        tier => quantity >= tier.minQuantity && quantity <= tier.maxQuantity
+      );
+      if (tier) {
+        basePrice = tier.price;
+      }
+    }
     
-    const tier = priceTiers.find(
-      tier => quantity >= tier.minQuantity && quantity <= tier.maxQuantity
-    );
-    
-    return tier ? tier.price : product.salePrice;
+    // Apply shipping source multiplier
+    switch (shippingSource) {
+      case "ex-china":
+        return basePrice; // Base price
+      case "ex-india":
+        return basePrice * 1.15; // 15% more expensive
+      case "doorstep":
+        return basePrice * 1.25; // 25% more expensive
+      default:
+        return basePrice;
+    }
   };
 
   // Format ratings display
@@ -98,9 +113,11 @@ export default function ProductDetail({ product, priceTiers, isLoadingPriceTiers
   
   return (
     <div className="flex flex-col md:flex-row">
-      {/* Product images section */}
+      {/* Product images section - sticky on scroll */}
       <div className="md:w-2/5 p-4">
-        <ProductImages images={product.images} name={product.name} />
+        <div className="md:sticky md:top-4">
+          <ProductImages images={product.images} name={product.name} />
+        </div>
       </div>
       
       {/* Product information section */}
@@ -158,36 +175,41 @@ export default function ProductDetail({ product, priceTiers, isLoadingPriceTiers
             isLoading={isLoadingPriceTiers}
           />
           
-          {/* Availability */}
-          <div className="text-green-600 flex items-center mb-2">
-            <CheckCircleIcon className="h-4 w-4 mr-2" />
-            <span className="font-medium">In Stock - Ships within 1 business day</span>
+          {/* Shipping Options */}
+          <div className="mb-4">
+            <Label htmlFor="shipping-source" className="font-semibold mb-1 block">Choose Shipping Source:</Label>
+            <div className="flex gap-2 items-center">
+              <Select value={shippingSource} onValueChange={setShippingSource}>
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="Select shipping source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ex-china">Ex-China (USD)</SelectItem>
+                  <SelectItem value="ex-india">Ex-India Customs (USD)</SelectItem>
+                  <SelectItem value="doorstep">Doorstep Delivery (USD)</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="relative group">
+                <InfoIcon className="h-4 w-4 text-gray-500 cursor-help" />
+                <div className="absolute left-6 top-0 w-64 bg-white shadow-lg rounded-md p-2 text-xs border border-gray-200 z-10 hidden group-hover:block">
+                  <p><strong>Ex-China:</strong> Shipping from our China warehouse. You handle shipping and customs.</p>
+                  <p><strong>Ex-India Customs:</strong> We handle shipping to India, you handle customs clearance.</p>
+                  <p><strong>Doorstep:</strong> We handle all shipping and customs to your location.</p>
+                </div>
+              </div>
+            </div>
           </div>
           
-          {/* Business delivery options */}
-          <RadioGroup defaultValue="standard" value={shippingOption} onValueChange={setShippingOption}>
-            <div className="flex items-start text-sm mb-1">
-              <RadioGroupItem id="standard-shipping" value="standard" className="mt-1 mr-2" />
-              <div>
-                <Label htmlFor="standard-shipping" className="font-medium">Standard Business Delivery</Label>
-                <div>Get it by <span className="font-bold">Friday, June 9</span></div>
-              </div>
+          {/* Availability and Shipping Time */}
+          <div className="flex flex-col gap-2 mb-2">
+            <div className="text-green-600 flex items-center">
+              <CheckCircleIcon className="h-4 w-4 mr-2" />
+              <span className="font-medium">In Stock - Ships within 1 business day from warehouse</span>
             </div>
-            <div className="flex items-start text-sm mb-1">
-              <RadioGroupItem id="express-shipping" value="express" className="mt-1 mr-2" />
-              <div>
-                <Label htmlFor="express-shipping" className="font-medium">Express Business Delivery</Label>
-                <div>Get it by <span className="font-bold">Tuesday, June 6</span></div>
-              </div>
+            <div className="text-gray-700 flex items-center text-sm">
+              <span className="font-medium">Standard shipping time: 18-20 days for all orders</span>
             </div>
-            <div className="flex items-start text-sm">
-              <RadioGroupItem id="scheduled-shipping" value="scheduled" className="mt-1 mr-2" />
-              <div>
-                <Label htmlFor="scheduled-shipping" className="font-medium">Scheduled Business Delivery</Label>
-                <div>Choose a date and time</div>
-              </div>
-            </div>
-          </RadioGroup>
+          </div>
         </div>
         
         {/* Call-to-action buttons */}
