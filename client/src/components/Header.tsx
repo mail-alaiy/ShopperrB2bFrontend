@@ -58,8 +58,8 @@ export default function Header() {
         <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/">
-              <a className="text-2xl font-bold mr-6">Shopperr<span className="text-[#febd69]">B2B</span></a>
+            <Link href="/" className="text-2xl font-bold mr-6">
+              Shopperr<span className="text-[#febd69]">B2B</span>
             </Link>
             
             {/* Search bar - hidden on mobile */}
@@ -107,8 +107,7 @@ export default function Header() {
               <div>Returns</div>
               <div className="font-bold">& Orders</div>
             </div>
-            <Link href="/cart">
-              <a className="flex items-center mx-2">
+            <Link href="/cart" className="flex items-center mx-2">
                 <ShoppingCartIcon className="h-6 w-6" />
                 <span className="ml-1 font-bold">Cart</span>
                 {cartItemCount > 0 && (
@@ -116,7 +115,6 @@ export default function Header() {
                     {cartItemCount}
                   </span>
                 )}
-              </a>
             </Link>
             
             {/* Mobile menu toggle */}
@@ -164,10 +162,9 @@ export default function Header() {
             <Link 
               key={index} 
               href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+              className="mr-4 whitespace-nowrap hidden md:block hover:text-[#febd69]"
             >
-              <a className="mr-4 whitespace-nowrap hidden md:block hover:text-[#febd69]">
-                {category}
-              </a>
+              {category}
             </Link>
           ))}
         </div>
@@ -200,10 +197,9 @@ export default function Header() {
                 <Link 
                   key={index} 
                   href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+                  className="py-2 border-b block"
                 >
-                  <a className="py-2 border-b block">
-                    {category}
-                  </a>
+                  {category}
                 </Link>
               ))}
             </div>

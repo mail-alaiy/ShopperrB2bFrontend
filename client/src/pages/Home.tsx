@@ -60,7 +60,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="bg-pink-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Hero Carousel */}
         <div className="mb-8">
