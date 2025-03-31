@@ -1,3 +1,4 @@
+import React from "react";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,22 +101,22 @@ export default function DynamicPricing({
           <div></div>
           
           {priceTiers.map((tier, index) => (
-            <>
-              <div key={`qty-${index}`}>
+            <React.Fragment key={`tier-${index}`}>
+              <div>
                 {tier.minQuantity === tier.maxQuantity 
                   ? tier.minQuantity 
                   : `${tier.minQuantity}-${tier.maxQuantity === 999999 ? '+' : tier.maxQuantity}`}
               </div>
-              <div key={`price-${index}`}>${tier.price.toFixed(2)}</div>
-              <div key={`total-${index}`}>
+              <div>${tier.price.toFixed(2)}</div>
+              <div>
                 ${(tier.price * (tier.minQuantity === tier.maxQuantity 
                   ? tier.minQuantity 
                   : tier.minQuantity)).toFixed(2)}
               </div>
-              <div key={`savings-${index}`} className="text-green-600">
+              <div className="text-green-600">
                 {tier.savingsPercentage > 0 ? `Save ${tier.savingsPercentage}%` : ''}
               </div>
-            </>
+            </React.Fragment>
           ))}
         </div>
       </div>
