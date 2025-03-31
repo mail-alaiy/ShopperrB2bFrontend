@@ -1,16 +1,31 @@
 import { 
-  users, type User, type InsertUser,
+  users, type User, type InsertUser, type RegisterUser, type LoginUser,
   products, type Product, type InsertProduct,
   priceTiers, type PriceTier, type InsertPriceTier,
   relatedProducts, type RelatedProduct, type InsertRelatedProduct,
-  cartItems, type CartItem, type InsertCartItem
+  cartItems, type CartItem, type InsertCartItem,
+  otps, type Otp, type InsertOtp, type VerifyOtp,
+  sessions, type Session, type InsertSession
 } from "@shared/schema";
 
 export interface IStorage {
-  // Users
+  // User Authentication Methods
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByPhone(phone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<Omit<User, 'id'>>): Promise<User | undefined>;
+  verifyUser(id: number): Promise<User | undefined>;
+  
+  // OTP Methods
+  createOtp(otp: InsertOtp): Promise<Otp>;
+  getOtpByPhone(phone: string): Promise<Otp | undefined>;
+  verifyOtp(phone: string, otp: string): Promise<boolean>;
+  
+  // Session Methods
+  createSession(session: InsertSession): Promise<Session>;
+  getSessionByToken(token: string): Promise<Session | undefined>;
+  deleteSession(token: string): Promise<void>;
   
   // Products
   getProducts(): Promise<Product[]>;
@@ -41,12 +56,16 @@ export class MemStorage implements IStorage {
   private priceTiers: Map<number, PriceTier>;
   private relatedProducts: Map<number, RelatedProduct>;
   private cartItems: Map<number, CartItem>;
+  private otps: Map<string, Otp>;
+  private sessions: Map<string, Session>;
   
   private userIdCounter: number;
   private productIdCounter: number;
   private priceTierIdCounter: number;
   private relatedProductIdCounter: number;
   private cartItemIdCounter: number;
+  private otpIdCounter: number;
+  private sessionIdCounter: number;
   
   constructor() {
     this.users = new Map();
@@ -54,12 +73,16 @@ export class MemStorage implements IStorage {
     this.priceTiers = new Map();
     this.relatedProducts = new Map();
     this.cartItems = new Map();
+    this.otps = new Map();
+    this.sessions = new Map();
     
     this.userIdCounter = 1;
     this.productIdCounter = 1;
     this.priceTierIdCounter = 1;
     this.relatedProductIdCounter = 1;
     this.cartItemIdCounter = 1;
+    this.otpIdCounter = 1;
+    this.sessionIdCounter = 1;
     
     // Initialize with some products
     this.initializeData();
@@ -71,14 +94,26 @@ export class MemStorage implements IStorage {
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    // Since we're using email as username
+    return this.getUserByEmail(username);
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
-    const user: User = { ...insertUser, id };
+    const now = new Date().toISOString();
+    
+    const user: User = { 
+      ...insertUser, 
+      id,
+      isVerified: false,
+      role: 'customer',
+      createdAt: insertUser.createdAt || now,
+      updatedAt: insertUser.updatedAt || now,
+      address: insertUser.address || null,
+      state: insertUser.state || null,
+      pincode: insertUser.pincode || null,
+    };
+    
     this.users.set(id, user);
     return user;
   }
@@ -123,6 +158,14 @@ export class MemStorage implements IStorage {
     return product;
   }
   
+  // Synchronous version for use within initializeData
+  private createProductSync(insertProduct: InsertProduct): Product {
+    const id = this.productIdCounter++;
+    const product: Product = { ...insertProduct, id };
+    this.products.set(id, product);
+    return product;
+  }
+  
   // Price tier methods
   async getPriceTiers(productId: number): Promise<PriceTier[]> {
     return Array.from(this.priceTiers.values()).filter(
@@ -131,6 +174,14 @@ export class MemStorage implements IStorage {
   }
   
   async createPriceTier(insertPriceTier: InsertPriceTier): Promise<PriceTier> {
+    const id = this.priceTierIdCounter++;
+    const priceTier: PriceTier = { ...insertPriceTier, id };
+    this.priceTiers.set(id, priceTier);
+    return priceTier;
+  }
+  
+  // Synchronous version for use within initializeData
+  private createPriceTierSync(insertPriceTier: InsertPriceTier): PriceTier {
     const id = this.priceTierIdCounter++;
     const priceTier: PriceTier = { ...insertPriceTier, id };
     this.priceTiers.set(id, priceTier);
@@ -147,6 +198,14 @@ export class MemStorage implements IStorage {
   }
   
   async createRelatedProduct(insertRelatedProduct: InsertRelatedProduct): Promise<RelatedProduct> {
+    const id = this.relatedProductIdCounter++;
+    const relatedProduct: RelatedProduct = { ...insertRelatedProduct, id };
+    this.relatedProducts.set(id, relatedProduct);
+    return relatedProduct;
+  }
+  
+  // Synchronous version for use within initializeData
+  private createRelatedProductSync(insertRelatedProduct: InsertRelatedProduct): RelatedProduct {
     const id = this.relatedProductIdCounter++;
     const relatedProduct: RelatedProduct = { ...insertRelatedProduct, id };
     this.relatedProducts.set(id, relatedProduct);
@@ -201,11 +260,86 @@ export class MemStorage implements IStorage {
   async removeFromCart(id: number): Promise<void> {
     this.cartItems.delete(id);
   }
+
+  // User Authentication Methods
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    );
+  }
+
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.phone === phone,
+    );
+  }
+
+  async updateUser(id: number, updates: Partial<Omit<User, 'id'>>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, ...updates };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async verifyUser(id: number): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, isVerified: true };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  // OTP Methods
+  async createOtp(insertOtp: InsertOtp): Promise<Otp> {
+    const id = this.otpIdCounter++;
+    const otp: Otp = { ...insertOtp, id, verified: false };
+    this.otps.set(insertOtp.phone, otp);
+    return otp;
+  }
+
+  async getOtpByPhone(phone: string): Promise<Otp | undefined> {
+    return this.otps.get(phone);
+  }
+
+  async verifyOtp(phone: string, otpCode: string): Promise<boolean> {
+    const otp = this.otps.get(phone);
+    if (!otp) return false;
+    
+    const now = new Date().toISOString();
+    if (otp.expiresAt < now) return false;
+    
+    if (otp.otp !== otpCode) return false;
+    
+    // Mark as verified
+    const verifiedOtp = { ...otp, verified: true };
+    this.otps.set(phone, verifiedOtp);
+    
+    return true;
+  }
+
+  // Session Methods
+  async createSession(insertSession: InsertSession): Promise<Session> {
+    const id = this.sessionIdCounter++;
+    const session: Session = { ...insertSession, id };
+    this.sessions.set(insertSession.token, session);
+    return session;
+  }
+
+  async getSessionByToken(token: string): Promise<Session | undefined> {
+    return this.sessions.get(token);
+  }
+
+  async deleteSession(token: string): Promise<void> {
+    this.sessions.delete(token);
+  }
   
   // Initialize with some data
   private initializeData() {
     // Keyboard and Mouse Combo
-    const keyboardMouseCombo = this.createProduct({
+    const keyboardMouseCombo = this.createProductSync({
       name: "Professional Wireless Keyboard and Mouse Combo - Business Edition",
       description: "The Professional Wireless Keyboard and Mouse Combo - Business Edition is designed specifically for office environments and business use. This premium set delivers reliable wireless performance with a range of up to 33 feet, making it perfect for conference rooms, workstations, and shared spaces.",
       brand: "Shopperr Business Electronics",
@@ -240,7 +374,7 @@ export class MemStorage implements IStorage {
     });
 
     // Price tiers for keyboard
-    this.createPriceTier({
+    this.createPriceTierSync({
       productId: keyboardMouseCombo.id,
       minQuantity: 1,
       maxQuantity: 9,
@@ -248,7 +382,7 @@ export class MemStorage implements IStorage {
       savingsPercentage: 0
     });
     
-    this.createPriceTier({
+    this.createPriceTierSync({
       productId: keyboardMouseCombo.id,
       minQuantity: 10,
       maxQuantity: 24,
@@ -256,7 +390,7 @@ export class MemStorage implements IStorage {
       savingsPercentage: 8
     });
     
-    this.createPriceTier({
+    this.createPriceTierSync({
       productId: keyboardMouseCombo.id,
       minQuantity: 25,
       maxQuantity: 49,
@@ -264,7 +398,7 @@ export class MemStorage implements IStorage {
       savingsPercentage: 14
     });
     
-    this.createPriceTier({
+    this.createPriceTierSync({
       productId: keyboardMouseCombo.id,
       minQuantity: 50,
       maxQuantity: 999999,
@@ -273,7 +407,7 @@ export class MemStorage implements IStorage {
     });
     
     // Related products
-    const wirelessMouse = this.createProduct({
+    const wirelessMouse = this.createProductSync({
       name: "Wireless Business Mouse with Programmable Buttons",
       description: "Professional wireless mouse with programmable buttons for business use",
       brand: "Shopperr Business Electronics",
@@ -297,7 +431,7 @@ export class MemStorage implements IStorage {
       subcategory: "Computer Peripherals"
     });
     
-    const wristRest = this.createProduct({
+    const wristRest = this.createProductSync({
       name: "Memory Foam Keyboard Wrist Rest - Office Pack (5-pack)",
       description: "Comfortable memory foam wrist rest for keyboard use",
       brand: "Shopperr Office Comfort",
@@ -321,7 +455,7 @@ export class MemStorage implements IStorage {
       subcategory: "Ergonomic Accessories"
     });
     
-    const usbHub = this.createProduct({
+    const usbHub = this.createProductSync({
       name: "4-Port USB 3.0 Hub with Extended Cable",
       description: "Expand your connectivity with this 4-port USB hub",
       brand: "Shopperr Tech Essentials",
@@ -345,7 +479,7 @@ export class MemStorage implements IStorage {
       subcategory: "Computer Accessories"
     });
     
-    const usbAdapter = this.createProduct({
+    const usbAdapter = this.createProductSync({
       name: "USB-C to USB Adapter - Business Bulk Pack (10-pack)",
       description: "USB-C to USB adapters for modern device compatibility",
       brand: "Shopperr Tech Essentials",
@@ -369,7 +503,7 @@ export class MemStorage implements IStorage {
       subcategory: "Computer Accessories"
     });
     
-    const laptopStand = this.createProduct({
+    const laptopStand = this.createProductSync({
       name: "Adjustable Laptop Stand for Business Desks",
       description: "Ergonomic laptop stand with adjustable height",
       brand: "Shopperr Office Ergonomics",
@@ -393,7 +527,7 @@ export class MemStorage implements IStorage {
       subcategory: "Desk Accessories"
     });
     
-    const deskPad = this.createProduct({
+    const deskPad = this.createProductSync({
       name: "Extended Desk Pad - Professional Series",
       description: "Large desk pad for improved workspace comfort",
       brand: "Shopperr Office Comfort",
@@ -417,7 +551,7 @@ export class MemStorage implements IStorage {
       subcategory: "Desk Accessories"
     });
     
-    const mousePad = this.createProduct({
+    const mousePad = this.createProductSync({
       name: "Professional Mouse Pad with Stitched Edges (Large)",
       description: "Premium mouse pad with stitched edges for durability",
       brand: "Shopperr Office Comfort",
@@ -442,50 +576,50 @@ export class MemStorage implements IStorage {
     });
     
     // Create relationships
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: wirelessMouse.id,
       relationshipType: "related"
     });
     
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: wristRest.id,
       relationshipType: "related"
     });
     
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: usbHub.id,
       relationshipType: "related"
     });
     
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: usbAdapter.id,
       relationshipType: "related"
     });
     
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: laptopStand.id,
       relationshipType: "related"
     });
     
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: deskPad.id,
       relationshipType: "related"
     });
     
     // Frequently bought together
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: wristRest.id,
       relationshipType: "frequently_bought_together"
     });
     
-    this.createRelatedProduct({
+    this.createRelatedProductSync({
       productId: keyboardMouseCombo.id,
       relatedProductId: mousePad.id,
       relationshipType: "frequently_bought_together"
