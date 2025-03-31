@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Scrollbar styling for Amazon-like experience */
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c2c2c2;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+  }
+  
+  /* Firefox scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #c2c2c2 #f1f1f1;
+  }
+  
+  /* Hide scrollbar for users that prefer reduced motion */
+  @media (prefers-reduced-motion) {
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .custom-scrollbar {
+      scrollbar-width: none;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

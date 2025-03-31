@@ -93,41 +93,141 @@ export default function Home() {
         </Carousel>
       </div>
 
-      {/* Category Grid - Enhanced */}
-      <div className="mb-16">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Shop by Category</h2>
-          <Link href="/categories">
-            <a className="text-blue-600 hover:underline text-sm flex items-center">
-              See all categories <ChevronRightIcon className="w-4 h-4 ml-1" />
-            </a>
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
-            <Link key={index} href={category.url}>
-              <a className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
-                {/* Gradient background with hover effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white group-hover:from-blue-100 transition-all duration-300"></div>
-                
-                {/* Category content */}
-                <div className="relative z-10 flex flex-col items-center p-6 h-full">
-                  <div className="p-4 mb-3 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 group-hover:text-blue-700 transition-all duration-300 transform group-hover:scale-110">
-                    {category.icon}
-                  </div>
-                  <span className="text-center font-semibold text-gray-800 group-hover:text-black">{category.name}</span>
-                  
-                  {/* Visual indicator for hover */}
-                  <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-xs text-blue-600 flex items-center">
-                      Shop now <ChevronRightIcon className="w-3 h-3 ml-1" />
-                    </span>
-                  </div>
-                </div>
+      {/* Amazon-style Content Blocks */}
+      <div className="mb-16 space-y-8">
+        {/* Deals Block */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Today's Deals</h2>
+            <Link href="/deals">
+              <a className="text-blue-600 hover:underline text-sm flex items-center">
+                See all deals <ChevronRightIcon className="w-4 h-4 ml-1" />
               </a>
             </Link>
-          ))}
+          </div>
+          
+          <div className="relative">
+            <div className="flex space-x-4 overflow-x-auto pb-4 custom-scrollbar">
+              {products?.slice(0, 8).map((product, index) => (
+                <div key={`deal-${index}`} className="flex-none w-40">
+                  <Link href={`/products/${product.id}`}>
+                    <a className="block group">
+                      <div className="relative mb-2">
+                        <div className="h-40 w-40 bg-gray-50 rounded-lg flex items-center justify-center p-2">
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name} 
+                            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                          />
+                        </div>
+                        <div className="absolute bottom-1 right-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          Deal
+                        </div>
+                      </div>
+                      <h3 className="text-sm text-gray-800 line-clamp-2 group-hover:text-blue-600">
+                        {product.name}
+                      </h3>
+                      <div className="mt-1">
+                        <span className="font-bold text-sm">${product.salePrice.toFixed(2)}</span>
+                        <span className="text-xs text-green-600 ml-1">
+                          ({Math.round((1 - product.salePrice / product.regularPrice) * 100)}% off)
+                        </span>
+                      </div>
+                    </a>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Buy Again Block */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Buy Again</h2>
+            <Link href="/buy-again">
+              <a className="text-blue-600 hover:underline text-sm flex items-center">
+                See all items <ChevronRightIcon className="w-4 h-4 ml-1" />
+              </a>
+            </Link>
+          </div>
+          
+          <div className="relative">
+            <div className="flex space-x-4 overflow-x-auto pb-4 custom-scrollbar">
+              {products?.slice(0, 8).map((product, index) => (
+                <div key={`buyagain-${index}`} className="flex-none w-40">
+                  <Link href={`/products/${product.id}`}>
+                    <a className="block group">
+                      <div className="h-40 w-40 bg-gray-50 rounded-lg flex items-center justify-center p-2 mb-2">
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.name} 
+                          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                        />
+                      </div>
+                      <h3 className="text-sm text-gray-800 line-clamp-2 group-hover:text-blue-600">
+                        {product.name}
+                      </h3>
+                      <div className="mt-1">
+                        <span className="font-bold text-sm">${product.salePrice.toFixed(2)}</span>
+                      </div>
+                      <div className="mt-2">
+                        <Button size="sm" className="w-full h-8 text-xs bg-amber-400 hover:bg-amber-500 text-gray-900">
+                          <ShoppingCartIcon className="w-3 h-3 mr-1" />
+                          Add to Cart
+                        </Button>
+                      </div>
+                    </a>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Trending Now Block */}
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Trending Now</h2>
+            <Link href="/trending">
+              <a className="text-blue-600 hover:underline text-sm flex items-center">
+                See more <ChevronRightIcon className="w-4 h-4 ml-1" />
+              </a>
+            </Link>
+          </div>
+          
+          <div className="relative">
+            <div className="flex space-x-4 overflow-x-auto pb-4 custom-scrollbar">
+              {products?.slice(0, 8).map((product, index) => (
+                <div key={`trending-${index}`} className="flex-none w-40">
+                  <Link href={`/products/${product.id}`}>
+                    <a className="block group">
+                      <div className="h-40 w-40 bg-gray-50 rounded-lg flex items-center justify-center p-2 mb-2">
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.name} 
+                          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                        />
+                      </div>
+                      <div className="flex text-amber-400 text-xs mb-1">
+                        {[...Array(Math.floor(product.rating))].map((_, i) => (
+                          <StarIcon key={i} className="w-3 h-3 fill-current" />
+                        ))}
+                        <span className="text-gray-500 text-xs ml-1">({product.ratingCount})</span>
+                      </div>
+                      <h3 className="text-sm text-gray-800 line-clamp-2 group-hover:text-blue-600">
+                        {product.name}
+                      </h3>
+                      <div className="mt-1 flex items-baseline">
+                        <span className="font-bold text-sm">${product.salePrice.toFixed(2)}</span>
+                        <span className="text-gray-500 line-through text-xs ml-1">${product.regularPrice.toFixed(2)}</span>
+                      </div>
+                    </a>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
