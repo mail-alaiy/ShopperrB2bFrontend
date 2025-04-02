@@ -65,7 +65,10 @@ export async function apiRequest(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn = <T,>({ on401: unauthorizedBehavior }: { on401: UnauthorizedBehavior }): QueryFunction<T> => 
+export const getQueryFn: <T>(options: {
+  on401: UnauthorizedBehavior;
+}) => QueryFunction<T> =
+  ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     // Simulate network delay
     await delay(100);
@@ -80,15 +83,13 @@ export const getQueryFn = <T,>({ on401: unauthorizedBehavior }: { on401: Unautho
       
       if (!isLoggedIn) {
         if (unauthorizedBehavior === "returnNull") {
-          return null as any;
+          return null;
         }
         throw new Error("Not authenticated");
       }
     }
     
-    // In a fully typed application, we would handle different return types based on URL
-    // but for simplicity, we'll just cast the result to any type T
-    return getMockData(url) as unknown as T;
+    return getMockData(url);
   };
 
 export const queryClient = new QueryClient({

@@ -1,63 +1,70 @@
-import express from 'express';
-import { registerRoutes } from './routes';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
-// Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Paths
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const clientDistDir = path.resolve(__dirname, '../client/dist');
-
-// Parse JSON request bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// In development mode, use Vite's dev server
-async function startServer() {
-  try {
-    // Setup routes and get the HTTP server
-    const httpServer = registerRoutes(app);
-    
-    if (process.env.NODE_ENV === 'production') {
-      // In production, serve the static files from the dist directory
-      app.use(express.static(clientDistDir));
-      
-      // For all other routes, let the SPA handle routing
-      app.get('*', (req, res) => {
-        res.sendFile(path.join(clientDistDir, 'index.html'));
-      });
-    } else {
-      // In development, proxy to Vite dev server
-      const { createServer } = await import('vite');
-      
-      const vite = await createServer({
-        root: 'client',
-        server: {
-          middlewareMode: true,
-          hmr: {
-            server: httpServer
-          }
-        },
-        appType: 'spa'
-      });
-      
-      // Use Vite's middlewares
-      app.use(vite.middlewares);
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
     }
+  });
 
-    // Start the server
-    httpServer.listen(Number(PORT), () => {
-      console.log(`Server running at http://localhost:${PORT}`);
-      console.log(`Frontend-only mode enabled`);
-    });
+  next();
+});
 
-  } catch (error) {
-    console.error('Error starting server:', error);
-    process.exit(1);
+(async () => {
+  const server = await registerRoutes(app);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
   }
-}
 
-startServer();
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const port = 5000;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
