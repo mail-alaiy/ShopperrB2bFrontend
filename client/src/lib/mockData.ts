@@ -29,7 +29,29 @@ export const mockProducts: Product[] = [
       "https://m.media-amazon.com/images/I/71jZb5D65dL._AC_SX679_.jpg",
       "https://m.media-amazon.com/images/I/71xQT6m4qDL._AC_SX679_.jpg"
     ],
-    variations: {},
+    variations: [
+      {
+        id: 1,
+        name: "Black",
+        color: "#000000",
+        inStock: true,
+        selected: true
+      },
+      {
+        id: 2,
+        name: "White",
+        color: "#FFFFFF",
+        inStock: true,
+        selected: false
+      },
+      {
+        id: 3,
+        name: "Gray",
+        color: "#808080",
+        inStock: false,
+        selected: false
+      }
+    ],
     category: "computer-accessories",
     subcategory: "keyboards-mice"
   }
