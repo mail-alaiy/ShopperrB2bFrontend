@@ -83,13 +83,15 @@ export const getQueryFn: <T>(options: {
       
       if (!isLoggedIn) {
         if (unauthorizedBehavior === "returnNull") {
-          return null;
+          return null as any;
         }
         throw new Error("Not authenticated");
       }
     }
     
-    return getMockData(url);
+    // In a fully typed application, we would handle different return types based on URL
+    // but for simplicity, we'll just cast the result to any type T
+    return getMockData(url) as unknown as T;
   };
 
 export const queryClient = new QueryClient({
