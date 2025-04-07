@@ -1,10 +1,17 @@
-import { pgTable, text, serial, integer, boolean, doublePrecision, json } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  doublePrecision,
+  json,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // User schema with additional authentication fields
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
@@ -107,7 +114,9 @@ export const relatedProducts = pgTable("related_products", {
   relationshipType: text("relationship_type").notNull(), // e.g., "related", "frequently_bought_together"
 });
 
-export const insertRelatedProductSchema = createInsertSchema(relatedProducts).omit({
+export const insertRelatedProductSchema = createInsertSchema(
+  relatedProducts
+).omit({
   id: true,
 });
 

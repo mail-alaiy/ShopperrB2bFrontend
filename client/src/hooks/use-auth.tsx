@@ -9,6 +9,9 @@ import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
+// Get the base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_USER_API_BASE_URL;
+
 type AuthResponse = {
   access_token: string;
   refresh_token: string;
@@ -30,6 +33,22 @@ type AuthResponse = {
   };
 };
 
+type MeResponseUser = {
+  id: string;
+  company_name: string;
+  business_type: string;
+  business_street: string;
+  business_city: string;
+  business_state: string;
+  business_country: string;
+  full_name: string;
+  phone_number: string;
+  email: string;
+  gst_number: string;
+  role: string;
+  created_at: string;
+};
+
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
@@ -49,14 +68,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     error,
     isLoading,
-  } = useQuery<User | null, Error>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+  } = useQuery<MeResponseUser | null, Error, User | null>({
+    queryKey: [`${API_BASE_URL}/users/me`],
+    enabled: !!localStorage.getItem("access_token"),
+    select: (data: MeResponseUser | null): User | null => {
+      if (!data) {
+        return null;
+      }
+
+      console.log("data", data);
+      const formattedUser: User = {
+        email: data.email,
+        name: data.full_name,
+        companyName: data.company_name,
+        phone: data.phone_number,
+        gstNumber: data.gst_number,
+        address: data.business_street || null,
+        city: data.business_city,
+        state: data.business_state || null,
+        pincode: null,
+        isVerified: true,
+        createdAt: data.created_at,
+        updatedAt: data.created_at,
+        role: data.role,
+        password: "",
+      };
+      return formattedUser;
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginUser) => {
-      const res = await fetch("http://localhost:8000/users/login", {
+      const res = await fetch(`${API_BASE_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,37 +119,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (data: AuthResponse, variables: LoginUser) => {
-      // Store tokens
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
 
-      // Store complete user data
-      queryClient.setQueryData(["/api/user"], {
-        id: data.user.id,
+      const formattedUserData: User = {
         email: data.user.email,
         name: data.user.full_name,
         companyName: data.user.company_name,
         phone: data.user.phone_number,
         gstNumber: data.user.gst_number,
-        address: data.user.business_street,
+        address: data.user.business_street || null,
         city: data.user.business_city,
-        state: data.user.business_state,
-        // No direct mapping for pincode in the response
-        isVerified: true, // Assuming user is verified if they can login
+        state: data.user.business_state || null,
+        pincode: null,
+        isVerified: true,
         createdAt: data.user.created_at,
-        // No direct mapping for updatedAt
+        updatedAt: data.user.created_at,
         role: data.user.role,
-        // You can also store additional fields from the response
+        password: "",
         businessType: data.user.business_type,
         businessCountry: data.user.business_country,
-      });
+      };
+
+      queryClient.setQueryData(["/users/me"], formattedUserData);
 
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
 
-      // Navigate to home page
       setLocation("/");
     },
     onError: (error: Error) => {
@@ -116,14 +161,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterUser) => {
-      // Format the data to match the required API structure
       const formattedData = {
         company_name: credentials.companyName,
-        business_type: "Manufacturer", // Default value or you could add this field to the form
+        business_type: "Manufacturer",
         business_street: credentials.address || "string",
         business_city: credentials.city,
         business_state: credentials.state || "string",
-        business_country: "string", // You might want to add this to your form
+        business_country: "string",
         full_name: credentials.name,
         phone_number: credentials.phone,
         email: credentials.email,
@@ -131,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password: credentials.password,
       };
 
-      const res = await fetch("http://localhost:8000/users/signup", {
+      const res = await fetch(`${API_BASE_URL}/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +191,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: () => {
-      // Don't store user data, just show success message
       toast({
         title: "Registration successful",
         description: "Please login with your credentials",
@@ -164,15 +207,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      // Remove tokens from localStorage
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-
-      // No API request needed
+      queryClient.setQueryData(["/users/me"], null);
       return;
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
       toast({
         title: "Logged out",
         description: "You have been successfully logged out",

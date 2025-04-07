@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, User, ShoppingBag, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { CartItem, Product } from "@shared/schema";
 import { Link } from "wouter";
@@ -12,7 +18,9 @@ export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
 
-  const { data: cartItems = [], isLoading: isCartLoading } = useQuery<(CartItem & { product: Product })[]>({
+  const { data: cartItems = [], isLoading: isCartLoading } = useQuery<
+    (CartItem & { product: Product })[]
+  >({
     queryKey: ["/api/cart"],
   });
 
@@ -24,7 +32,9 @@ export default function ProfilePage() {
     return (
       <div className="container mx-auto py-10 text-center">
         <div className="p-8">
-          <h1 className="text-2xl font-bold mb-4">Please login to view your profile</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            Please login to view your profile
+          </h1>
           <Link href="/auth">
             <Button>Login</Button>
           </Link>
@@ -38,10 +48,20 @@ export default function ProfilePage() {
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start gap-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">{user.name}'s Account</h1>
-          <p className="text-gray-500">{user.company} • {user.city}</p>
+          <p className="text-gray-500">
+            {user.company} • {user.city}
+          </p>
         </div>
-        <Button variant="destructive" onClick={handleLogout} disabled={logoutMutation.isPending}>
-          {logoutMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogOut className="h-4 w-4 mr-2" />}
+        <Button
+          variant="destructive"
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+        >
+          {logoutMutation.isPending ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <LogOut className="h-4 w-4 mr-2" />
+          )}
           Logout
         </Button>
       </div>
@@ -56,13 +76,21 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="space-y-1">
-                <Button variant="ghost" className="w-full justify-start" asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
                   <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </Button>
-                <Button variant="ghost" className="w-full justify-start" asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
                   <Link href="/orders">
                     <ShoppingBag className="mr-2 h-4 w-4" />
                     Orders
@@ -89,46 +117,65 @@ export default function ProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>View and update your profile details</CardDescription>
+                  <CardDescription>
+                    View and update your profile details
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Full Name</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Full Name
+                      </h3>
                       <p>{user.name}</p>
                     </div>
-                    <div>
+                    {/* <div>
                       <h3 className="text-sm font-medium text-gray-500">Username</h3>
                       <p>{user.username}</p>
-                    </div>
+                    </div> */}
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Email
+                      </h3>
                       <p>{user.email}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Phone</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Phone
+                      </h3>
                       <p>{user.phone}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Company</h3>
-                      <p>{user.company}</p>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Company
+                      </h3>
+                      <p>{user.companyName}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">City</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        City
+                      </h3>
                       <p>{user.city}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">GST Number</h3>
-                      <p>{user.gst}</p>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        GST Number
+                      </h3>
+                      <p>{user.gstNumber}</p>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Account Status</h3>
-                      <p>{user.isVerified ? "Verified" : "Pending Verification"}</p>
-                    </div>
+                    {/* Aryan - after company validation functionality */}
+                    {/* <div>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Account Status
+                      </h3>
+                      <p>
+                        {user.isVerified ? "Verified" : "Pending Verification"}
+                      </p>
+                    </div> */}
                   </div>
-                  <div className="pt-4">
+                  {/* <div className="pt-4">
                     <Button>Update Profile</Button>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -137,7 +184,9 @@ export default function ProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Your Recent Orders</CardTitle>
-                  <CardDescription>View your order history and status</CardDescription>
+                  <CardDescription>
+                    View your order history and status
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {isCartLoading ? (
@@ -147,24 +196,34 @@ export default function ProfilePage() {
                   ) : cartItems.length > 0 ? (
                     <div className="space-y-4">
                       {cartItems.map((item) => (
-                        <div key={item.id} className="flex items-center gap-4 border-b pb-4">
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-4 border-b pb-4"
+                        >
                           <div className="h-16 w-16 overflow-hidden rounded bg-gray-100">
-                            {Array.isArray(item.product.images) && item.product.images.length > 0 && (
-                              <img 
-                                src={item.product.images[0]} 
-                                alt={item.product.name} 
-                                className="h-full w-full object-cover"
-                              />
-                            )}
+                            {Array.isArray(item.product.images) &&
+                              item.product.images.length > 0 && (
+                                <img
+                                  src={item.product.images[0]}
+                                  alt={item.product.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              )}
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium">{item.product.name}</h3>
                             <p className="text-sm text-gray-500">
-                              Quantity: {item.quantity} • ${item.product.salePrice.toFixed(2)} each
+                              Quantity: {item.quantity} • $
+                              {item.product.salePrice.toFixed(2)} each
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold">${(item.quantity * item.product.salePrice).toFixed(2)}</p>
+                            <p className="font-bold">
+                              $
+                              {(item.quantity * item.product.salePrice).toFixed(
+                                2
+                              )}
+                            </p>
                           </div>
                         </div>
                       ))}

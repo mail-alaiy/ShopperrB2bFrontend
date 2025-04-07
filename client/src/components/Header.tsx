@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  SearchIcon, 
-  MenuIcon, 
-  ShoppingCartIcon, 
-  UserIcon, 
+import {
+  SearchIcon,
+  MenuIcon,
+  ShoppingCartIcon,
+  UserIcon,
   PackageIcon,
   ChevronDownIcon,
-  LogIn
+  LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,32 +28,36 @@ export default function Header() {
   const [isCategorySidebarOpen, setIsCategorySidebarOpen] = useState(false);
   const [location, setLocation] = useLocation();
   const { user, logoutMutation } = useAuth();
-  
-  const { data: cartItems = [] } = useQuery<(CartItem & { product: Product })[]>({
+
+  console.log(user);
+
+  const { data: cartItems = [] } = useQuery<
+    (CartItem & { product: Product })[]
+  >({
     queryKey: ["/api/cart"],
   });
-  
+
   const cartItemCount = cartItems.length || 0;
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Implement search functionality
     console.log("Searching for:", searchTerm);
   };
-  
+
   const toggleCategorySidebar = () => {
     setIsCategorySidebarOpen(!isCategorySidebarOpen);
   };
-  
+
   const categories = [
     "Office Supplies",
     "Technology",
     "Furniture",
     "Bulk Orders",
     "Business Deals",
-    "Customer Service"
+    "Customer Service",
   ];
-  
+
   return (
     <header>
       {/* Top navigation bar */}
@@ -64,7 +68,7 @@ export default function Header() {
             <Link href="/" className="text-2xl font-bold mr-6">
               Shopperr<span className="text-[#febd69]">B2B</span>
             </Link>
-            
+
             {/* Search bar - hidden on mobile */}
             <div className="hidden md:flex flex-grow max-w-3xl">
               <form onSubmit={handleSearch} className="w-full relative flex">
@@ -75,8 +79,8 @@ export default function Header() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="rounded-l-none bg-[#febd69] hover:bg-amber-500 text-black"
                 >
                   <SearchIcon className="h-4 w-4" />
@@ -84,11 +88,11 @@ export default function Header() {
               </form>
             </div>
           </div>
-          
+
           {/* Account & Orders */}
           <div className="flex items-center">
             <div className="hidden md:block text-sm mx-2">
-              <div>{user ? `Hello, ${user.name}` : 'Hello, Sign in'}</div>
+              <div>{user ? `Hello, ${user.name}` : "Hello, Sign in"}</div>
               <div className="font-bold">
                 <DropdownMenu>
                   <DropdownMenuTrigger className="focus:outline-none flex items-center">
@@ -108,7 +112,9 @@ export default function Header() {
                             <PackageIcon className="mr-2 h-4 w-4" /> Your Orders
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => logoutMutation.mutate()}>
+                        <DropdownMenuItem
+                          onClick={() => logoutMutation.mutate()}
+                        >
                           <LogIn className="mr-2 h-4 w-4" /> Sign Out
                         </DropdownMenuItem>
                       </>
@@ -130,18 +136,18 @@ export default function Header() {
               </div>
             </div>
             <Link href="/cart" className="flex items-center mx-2">
-                <ShoppingCartIcon className="h-6 w-6" />
-                <span className="ml-1 font-bold">Cart</span>
-                {cartItemCount > 0 && (
-                  <span className="bg-[#f90] text-white rounded-full px-2 ml-1">
-                    {cartItemCount}
-                  </span>
-                )}
+              <ShoppingCartIcon className="h-6 w-6" />
+              <span className="ml-1 font-bold">Cart</span>
+              {cartItemCount > 0 && (
+                <span className="bg-[#f90] text-white rounded-full px-2 ml-1">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
-            
+
             {/* Mobile menu toggle */}
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               className="md:hidden ml-2 text-white"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -150,7 +156,7 @@ export default function Header() {
             </Button>
           </div>
         </div>
-        
+
         {/* Mobile search - visible only on mobile */}
         <div className="md:hidden px-4 pb-2">
           <form onSubmit={handleSearch} className="w-full relative flex">
@@ -161,8 +167,8 @@ export default function Header() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="rounded-l-none bg-[#febd69] hover:bg-amber-500 text-black"
             >
               <SearchIcon className="h-4 w-4" />
@@ -170,20 +176,22 @@ export default function Header() {
           </form>
         </div>
       </div>
-      
+
       {/* Secondary navigation */}
       <div className="bg-[#232f3e] py-1 px-4">
         <div className="container mx-auto flex items-center text-sm text-white overflow-x-auto">
-          <button 
+          <button
             onClick={toggleCategorySidebar}
             className="mr-4 whitespace-nowrap flex items-center cursor-pointer"
           >
             <MenuIcon className="mr-1 h-4 w-4" /> All Categories
           </button>
           {categories.map((category, index) => (
-            <Link 
-              key={index} 
-              href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+            <Link
+              key={index}
+              href={`/categories/${category
+                .toLowerCase()
+                .replace(/\s+/g, "-")}`}
               className="mr-4 whitespace-nowrap hidden md:block hover:text-[#febd69]"
             >
               {category}
@@ -191,13 +199,13 @@ export default function Header() {
           ))}
         </div>
       </div>
-      
+
       {/* Category Sidebar */}
-      <CategorySidebar 
-        isOpen={isCategorySidebarOpen} 
-        onClose={() => setIsCategorySidebarOpen(false)} 
+      <CategorySidebar
+        isOpen={isCategorySidebarOpen}
+        onClose={() => setIsCategorySidebarOpen(false)}
       />
-      
+
       {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-b text-black">
@@ -217,8 +225,8 @@ export default function Header() {
                       Your Orders
                     </div>
                   </Link>
-                  <button 
-                    onClick={() => logoutMutation.mutate()} 
+                  <button
+                    onClick={() => logoutMutation.mutate()}
                     className="py-2 border-b text-left font-bold flex items-center"
                   >
                     <LogIn className="mr-2 h-4 w-4" />
@@ -240,9 +248,11 @@ export default function Header() {
                 </div>
               </Link>
               {categories.map((category, index) => (
-                <Link 
-                  key={index} 
-                  href={`/categories/${category.toLowerCase().replace(/\s+/g, '-')}`}
+                <Link
+                  key={index}
+                  href={`/categories/${category
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
                   className="py-2 border-b block"
                 >
                   {category}
