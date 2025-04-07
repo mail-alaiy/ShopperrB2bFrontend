@@ -4,7 +4,14 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -19,7 +26,10 @@ const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   companyName: z.string().min(1, "Company name is required"),
   city: z.string().min(1, "City is required"),
-  gstNumber: z.string().min(15, "Valid GST number is required").max(15, "GST number must be 15 characters"),
+  gstNumber: z
+    .string()
+    .min(15, "Valid GST number is required")
+    .max(15, "GST number must be 15 characters"),
   email: z.string().email("Valid email address is required"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   state: z.string().optional(),
@@ -35,7 +45,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [location] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
-  
+
   // Redirect if already logged in
   if (user) {
     // Get the return URL from the location search params if it exists
@@ -73,7 +83,12 @@ export default function AuthPage() {
   }
 
   function onRegisterSubmit(data: RegisterFormValues) {
-    registerMutation.mutate(data);
+    registerMutation.mutate(data, {
+      onSuccess: () => {
+        // Switch to login tab after successful registration
+        setActiveTab("login");
+      },
+    });
   }
 
   return (
@@ -90,7 +105,11 @@ export default function AuthPage() {
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
@@ -98,7 +117,10 @@ export default function AuthPage() {
 
             <TabsContent value="login" className="space-y-4 mt-6">
               <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                <form
+                  onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={loginForm.control}
                     name="email"
@@ -106,13 +128,17 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter your email" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={loginForm.control}
                     name="password"
@@ -120,16 +146,20 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Enter your password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Enter your password"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={loginMutation.isPending}
                   >
                     {loginMutation.isPending ? (
@@ -143,10 +173,10 @@ export default function AuthPage() {
                   </Button>
                 </form>
               </Form>
-              
+
               <div className="text-center text-sm">
                 <span>Don't have an account? </span>
-                <button 
+                <button
                   onClick={() => setActiveTab("register")}
                   className="text-primary font-medium hover:underline"
                 >
@@ -157,7 +187,10 @@ export default function AuthPage() {
 
             <TabsContent value="register" className="space-y-4 mt-6">
               <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                <form
+                  onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                  className="space-y-4"
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={registerForm.control}
@@ -166,13 +199,16 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your full name" {...field} />
+                            <Input
+                              placeholder="Enter your full name"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="companyName"
@@ -180,14 +216,17 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Company Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your company name" {...field} />
+                            <Input
+                              placeholder="Enter your company name"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={registerForm.control}
@@ -202,7 +241,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="gstNumber"
@@ -210,14 +249,18 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>GST Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your 15-digit GST number" maxLength={15} {...field} />
+                            <Input
+                              placeholder="Enter your 15-digit GST number"
+                              maxLength={15}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
+
                   <FormField
                     control={registerForm.control}
                     name="email"
@@ -225,13 +268,17 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter your email" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={registerForm.control}
                     name="phone"
@@ -239,7 +286,10 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your phone number" {...field} />
+                          <Input
+                            placeholder="Enter your phone number"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -260,7 +310,7 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={registerForm.control}
                       name="pincode"
@@ -268,7 +318,10 @@ export default function AuthPage() {
                         <FormItem>
                           <FormLabel>Pincode</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your pincode" {...field} />
+                            <Input
+                              placeholder="Enter your pincode"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -289,9 +342,7 @@ export default function AuthPage() {
                       </FormItem>
                     )}
                   />
-                  
 
-                  
                   <FormField
                     control={registerForm.control}
                     name="password"
@@ -299,16 +350,20 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Create a password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Create a password"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? (
@@ -322,10 +377,10 @@ export default function AuthPage() {
                   </Button>
                 </form>
               </Form>
-              
+
               <div className="text-center text-sm">
                 <span>Already have an account? </span>
-                <button 
+                <button
                   onClick={() => setActiveTab("login")}
                   className="text-primary font-medium hover:underline"
                 >
@@ -336,13 +391,14 @@ export default function AuthPage() {
           </Tabs>
         </div>
       </div>
-      
+
       {/* Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-r from-blue-800 to-indigo-900 text-white items-center justify-center p-8">
         <div className="max-w-lg space-y-8">
           <h1 className="text-4xl font-bold">Shopperr Business</h1>
           <p className="text-xl">
-            The premier B2B marketplace for businesses of all sizes. Get bulk discounts, exclusive deals, and personalized recommendations.
+            The premier B2B marketplace for businesses of all sizes. Get bulk
+            discounts, exclusive deals, and personalized recommendations.
           </p>
           <ul className="space-y-3">
             <li className="flex items-start">

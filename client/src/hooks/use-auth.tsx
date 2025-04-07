@@ -116,14 +116,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
+      // Format the data to match the required API structure
+      const formattedData = {
+        company_name: credentials.companyName,
+        business_type: "Manufacturer", // Default value or you could add this field to the form
+        business_street: credentials.address || "string",
+        business_city: credentials.city,
+        business_state: credentials.state || "string",
+        business_country: "string", // You might want to add this to your form
+        full_name: credentials.name,
+        phone_number: credentials.phone,
+        email: credentials.email,
+        gst_number: credentials.gstNumber,
+        password: credentials.password,
+      };
+
+      const res = await fetch("http://localhost:8000/users/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formattedData),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Registration failed");
+      }
+
       return await res.json();
     },
-    onSuccess: (user: User) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: () => {
+      // Don't store user data, just show success message
       toast({
         title: "Registration successful",
-        description: "Welcome to Shopperr!",
+        description: "Please login with your credentials",
       });
     },
     onError: (error: Error) => {
