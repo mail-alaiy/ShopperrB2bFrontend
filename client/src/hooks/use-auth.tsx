@@ -137,7 +137,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      // Remove tokens from localStorage
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+
+      // No API request needed
+      return;
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
