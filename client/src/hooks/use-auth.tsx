@@ -76,7 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      console.log("data", data);
       const formattedUser: User = {
         email: data.email,
         name: data.full_name,
@@ -95,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       return formattedUser;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: Infinity,
     retry: false,
     refetchOnWindowFocus: true,
     refetchOnMount: true,

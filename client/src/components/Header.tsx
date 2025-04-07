@@ -21,6 +21,7 @@ import {
 import CategorySidebar from "@/components/CategorySidebar";
 import { CartItem, Product } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,14 +50,8 @@ export default function Header() {
     setIsCategorySidebarOpen(!isCategorySidebarOpen);
   };
 
-  const categories = [
-    "Office Supplies",
-    "Technology",
-    "Furniture",
-    "Bulk Orders",
-    "Business Deals",
-    "Customer Service",
-  ];
+  const { categories } = useCategories();
+  const topLevelCategories = categories?.map((cat) => cat.category) ?? [];
 
   return (
     <header>
@@ -186,13 +181,13 @@ export default function Header() {
           >
             <MenuIcon className="mr-1 h-4 w-4" /> All Categories
           </button>
-          {categories.map((category, index) => (
+          {topLevelCategories.slice(0, 8).map((category) => (
             <Link
-              key={index}
+              key={category}
               href={`/categories/${category
                 .toLowerCase()
                 .replace(/\s+/g, "-")}`}
-              className="mr-4 whitespace-nowrap hidden md:block hover:text-[#febd69]"
+              className="mr-4 whitespace-nowrap hover:text-gray-300"
             >
               {category}
             </Link>
@@ -247,9 +242,9 @@ export default function Header() {
                   Returns & Orders
                 </div>
               </Link>
-              {categories.map((category, index) => (
+              {topLevelCategories.map((category) => (
                 <Link
-                  key={index}
+                  key={category}
                   href={`/categories/${category
                     .toLowerCase()
                     .replace(/\s+/g, "-")}`}

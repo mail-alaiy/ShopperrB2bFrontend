@@ -16,6 +16,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { CategoryProvider } from "./hooks/use-categories";
 
 function Router() {
   return (
@@ -36,22 +37,24 @@ function Router() {
 
 function App() {
   const [location] = useLocation();
-  const isCheckout = location.startsWith('/checkout');
-  const isAuthPage = location.startsWith('/auth');
-  const isOrderSuccess = location.startsWith('/order-success');
+  const isCheckout = location.startsWith("/checkout");
+  const isAuthPage = location.startsWith("/auth");
+  const isOrderSuccess = location.startsWith("/order-success");
   const hideHeaderFooter = isCheckout || isAuthPage || isOrderSuccess;
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen">
-          {!hideHeaderFooter && <Header />}
-          <main className="flex-grow">
-            <Router />
-          </main>
-          {!hideHeaderFooter && <Footer />}
-        </div>
-        <Toaster />
+        <CategoryProvider>
+          <div className="flex flex-col min-h-screen">
+            {!hideHeaderFooter && <Header />}
+            <main className="flex-grow">
+              <Router />
+            </main>
+            {!hideHeaderFooter && <Footer />}
+          </div>
+          <Toaster />
+        </CategoryProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
