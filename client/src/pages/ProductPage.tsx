@@ -10,24 +10,32 @@ import { AlertCircle } from "lucide-react";
 
 export default function ProductPage() {
   const { id } = useParams();
-  const productId = parseInt(id || "0");
+  const productId = id || "0";
 
-  const { data: product, isLoading, error } = useQuery({
-    queryKey: ["/api/products/" + productId],
-    enabled: !isNaN(productId) && productId > 0,
+  const { data, isLoading, error } = useQuery({
+    queryKey: [`/product/${productId}`],
+    enabled: productId !== "0",
+    queryFn: () =>
+      fetch(`http://localhost:8002/product/${productId}`).then((res) =>
+        res.json()
+      ),
   });
+
+  const product = data?.payload;
 
   const { data: priceTiers, isLoading: isLoadingPriceTiers } = useQuery({
     queryKey: [`/api/products/${productId}/price-tiers`],
-    enabled: !isNaN(productId) && productId > 0,
+    enabled: !!product,
   });
 
   // Build breadcrumb items
   const breadcrumbs = product
     ? [
         { label: "Home", url: "/" },
-        { label: product.category, url: `/categories/${encodeURIComponent(product.category)}` },
-        { label: product.subcategory, url: `/subcategories/${encodeURIComponent(product.subcategory)}` },
+        {
+          label: product.category || "Category",
+          url: `/categories/${encodeURIComponent(product.category || "")}`,
+        },
         { label: product.name, url: "#" },
       ]
     : [];
@@ -81,10 +89,35 @@ export default function ProductPage() {
     );
   }
 
+  // Transform API data to match component expectations
+  const transformedProduct = {
+    id: product._id.$oid,
+    name: product.name,
+    category: product.category,
+    description: product.description,
+    regularPrice: product.mrp,
+    salePrice: product.sp,
+    images: product.imgUrl.map((img: any) => ({
+      src: img.src,
+      alt: product.name,
+    })),
+    brand: product.pd_brand || "Generic",
+    rating: 4.5, // Example default
+    ratingCount: 120, // Example default
+    variations: [],
+    features: [
+      `Weight: ${product.weight} grams`,
+      `Dimensions: ${product.length}L × ${product.width}B × ${product.height}H`,
+      `Location: ${product.pd_location || "Not specified"}`,
+      `Product Code: ${product.code}`,
+      `HSN Code: ${product.hsn}`,
+    ].filter((feature) => !feature.includes("undefined")),
+  };
+
   return (
     <div className="container mx-auto px-4 py-2">
       {/* Breadcrumb navigation */}
-      <nav className="text-sm text-gray-500 mb-4">
+      {/* <nav className="text-sm text-gray-500 mb-4">
         <ol className="list-none p-0 inline-flex">
           {breadcrumbs.map((crumb, index) => (
             <li key={index} className="flex items-center">
@@ -97,23 +130,23 @@ export default function ProductPage() {
             </li>
           ))}
         </ol>
-      </nav>
+      </nav> */}
 
       {/* Product Details */}
-      <ProductDetail 
-        product={product} 
-        priceTiers={priceTiers || []} 
-        isLoadingPriceTiers={isLoadingPriceTiers} 
+      <ProductDetail
+        product={transformedProduct}
+        priceTiers={priceTiers || []}
+        isLoadingPriceTiers={isLoadingPriceTiers}
       />
-      
+
       {/* Product Detail Tabs */}
-      <ProductDetailTabs product={product} />
-      
+      <ProductDetailTabs product={transformedProduct} />
+
       {/* Related Products */}
-      <RelatedProducts productId={productId} />
-      
+      {/* <RelatedProducts productId={productId} /> */}
+
       {/* Frequently Bought Together */}
-      <FrequentlyBoughtTogether productId={productId} />
+      {/* <FrequentlyBoughtTogether productId={productId} /> */}
     </div>
   );
 }
