@@ -93,11 +93,25 @@ export default function ProductDetail({
 
   // Add to cart mutation
   const addToCartMutation = useMutation({
-    mutationFn: (data: { productId: number; quantity: number }) => {
-      return apiRequest("POST", "/api/cart", data);
+    mutationFn: async () => {
+      const data = {
+        quantity: quantity,
+        source:
+          shippingSource === "ex-china"
+            ? "Ex-china"
+            : shippingSource === "ex-india"
+            ? "Ex-india custom"
+            : "doorstep delivery",
+      };
+
+      return apiRequest(
+        "POST",
+        `http://localhost:8001/cart/items/${product.id}`,
+        data
+      );
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      await queryClient.invalidateQueries({ queryKey: ["/cart/items"] });
       toast({
         title: "Added to Cart",
         description: `${quantity} item${
@@ -105,37 +119,34 @@ export default function ProductDetail({
         } added to your cart.`,
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: `Failed to add item to cart: ${error}`,
+        description: `Failed to add item to cart: ${error.message}`,
       });
     },
   });
 
   const handleAddToCart = () => {
-    addToCartMutation.mutate({
-      productId: product.id,
-      quantity: quantity,
-    });
+    addToCartMutation.mutate();
   };
 
-  const handleBuyNow = () => {
-    // First add to cart
-    addToCartMutation.mutate({
-      productId: product.id,
-      quantity: quantity,
-    });
+  // const handleBuyNow = () => {
+  //   // First add to cart
+  //   addToCartMutation.mutate({
+  //     productId: product.id,
+  //     quantity: quantity,
+  //   });
 
-    // Then redirect to checkout (would be implemented in a real app)
-    toast({
-      title: "Proceeding to Checkout",
-      description: `Redirecting to checkout with ${quantity} item${
-        quantity > 1 ? "s" : ""
-      }.`,
-    });
-  };
+  // Then redirect to checkout (would be implemented in a real app)
+  //   toast({
+  //     title: "Proceeding to Checkout",
+  //     description: `Redirecting to checkout with ${quantity} item${
+  //       quantity > 1 ? "s" : ""
+  //     }.`,
+  //   });
+  // };
 
   const currentPrice = calculatePrice();
   const totalPrice = (currentPrice * quantity).toFixed(2);
