@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { id: "description", label: "Description" },
-  { id: "specs", label: "Specifications" },
+  // { id: "specs", label: "Specifications" },
   // { id: "documents", label: "Documents" },
   // { id: "reviews", label: "Reviews" },
   // { id: "faq", label: "FAQ" },
@@ -49,7 +49,7 @@ export default function ProductDetailTabs({ product }: ProductDetailTabsProps) {
         </div>
 
         {/* Specifications Tab */}
-        <div
+        {/* <div
           id="tab-content-specs"
           className={`py-4 ${activeTab === "specs" ? "block" : "hidden"}`}
         >
@@ -82,7 +82,7 @@ export default function ProductDetailTabs({ product }: ProductDetailTabsProps) {
               </tbody>
             </table>
           </div>
-        </div>
+        </div> */}
 
         {/* Documents Tab */}
         <div

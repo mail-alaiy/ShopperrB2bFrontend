@@ -81,7 +81,7 @@ export default function CategoryPage() {
   const getFullImageUrl = (imagePath: string) => {
     if (!imagePath) return "/placeholder-image.jpg";
     if (imagePath.startsWith("http")) return imagePath; // Already a full URL
-    return `${S3_BUCKET_FILE_URL}/${imagePath}`;
+    return `${S3_BUCKET_FILE_URL}/${imagePath}png`;
   };
 
   // Format category name for display

@@ -8,6 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
+// Add this constant for the S3 bucket URL
+const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
+
 export default function ProductPage() {
   const { id } = useParams();
   const productId = id || "0";
@@ -88,7 +91,7 @@ export default function ProductPage() {
       </div>
     );
   }
-
+  // console.log(product);
   // Transform API data to match component expectations
   const transformedProduct = {
     id: product._id.$oid,
@@ -97,10 +100,12 @@ export default function ProductPage() {
     description: product.description,
     regularPrice: product.mrp,
     salePrice: product.sp,
-    images: product.imgUrl.map((img: any) => ({
-      src: img.src,
-      alt: product.name,
-    })),
+    images: product.imgUrl.map(
+      (img: any) =>
+        `${S3_BUCKET_FILE_URL}/${img.src}${
+          img.src.endsWith(".png") ? "" : ".png"
+        }`
+    ),
     brand: product.pd_brand || "Generic",
     rating: 4.5, // Example default
     ratingCount: 120, // Example default
@@ -108,11 +113,12 @@ export default function ProductPage() {
     features: [
       `Weight: ${product.weight} grams`,
       `Dimensions: ${product.length}L × ${product.width}B × ${product.height}H`,
-      `Location: ${product.pd_location || "Not specified"}`,
       `Product Code: ${product.code}`,
       `HSN Code: ${product.hsn}`,
     ].filter((feature) => !feature.includes("undefined")),
   };
+
+  console.log(transformedProduct);
 
   return (
     <div className="container mx-auto px-4 py-2">
