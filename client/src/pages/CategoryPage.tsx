@@ -37,20 +37,34 @@ interface ProductResponse {
 }
 
 export default function CategoryPage() {
-  const [match, params] = useRoute("/categories/:category");
-  const category = params?.category || "";
+  const [matchCategory] = useRoute("/categories/:category");
+  const [matchSubcategory] = useRoute("/subcategories/:category");
+  const [location] = useLocation();
+
+  // Extract category from either route
+  const category = matchCategory
+    ? location.split("/")[2]
+    : matchSubcategory
+    ? location.split("/")[2]
+    : "";
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [location, navigate] = useLocation();
   const { user } = useAuth();
 
   // Fetch products from the API
   const { data: productsResponse, isLoading } = useQuery<ProductResponse>({
     queryKey: [`/api/categories/${category}/products`],
     queryFn: async () => {
-      // You can adjust the query parameters as needed
+      // Clean up the category string by:
+      // 1. Replacing multiple hyphens with a single space
+      // 2. Removing any commas
+      const cleanCategory = category
+        .replace(/-+/g, " ")
+        .replace(/,/g, "")
+        .trim();
+      console.log(cleanCategory);
       const response = await fetch(
         `http://localhost:8002/products?query=${encodeURIComponent(
-          category
+          cleanCategory
         )}&limit=20&page=1`
       );
       if (!response.ok) {
