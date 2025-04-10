@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Product, CartItem } from "@shared/schema";
+import { COUNTRIES } from "@/lib/countries";
 import {
   CreditCardIcon,
   TruckIcon,
@@ -255,25 +256,6 @@ export default function CheckoutPage() {
                     <form onSubmit={handleSubmitShipping}>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <Label htmlFor="company">Company Name*</Label>
-                          <Input
-                            id="company"
-                            placeholder="Your Company"
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="tax-id">
-                            Tax ID / Business Number
-                          </Label>
-                          <Input
-                            id="tax-id"
-                            placeholder="Optional"
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
                           <Label htmlFor="first-name">First Name*</Label>
                           <Input
                             id="first-name"
@@ -311,6 +293,14 @@ export default function CheckoutPage() {
                           className="mt-1"
                         />
                       </div>
+                      <div className="mb-4">
+                        <Label htmlFor="address3">Address Line 3</Label>
+                        <Input
+                          id="address3"
+                          placeholder="Landmark, etc."
+                          className="mt-1"
+                        />
+                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
@@ -344,15 +334,19 @@ export default function CheckoutPage() {
 
                       <div className="mb-4">
                         <Label htmlFor="country">Country*</Label>
-                        <Select defaultValue="us">
+                        <Select defaultValue="in">
                           <SelectTrigger>
                             <SelectValue placeholder="Select a country" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="us">United States</SelectItem>
-                            <SelectItem value="ca">Canada</SelectItem>
-                            <SelectItem value="mx">Mexico</SelectItem>
-                            <SelectItem value="uk">United Kingdom</SelectItem>
+                          <SelectContent className="max-h-[200px]">
+                            {COUNTRIES.map((country) => (
+                              <SelectItem
+                                key={country.code}
+                                value={country.code}
+                              >
+                                {country.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
