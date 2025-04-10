@@ -17,6 +17,7 @@ import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { CategoryProvider } from "./hooks/use-categories";
+import SearchPage from "@/pages/SearchPage";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/orders" component={OrdersPage} />
       <ProtectedRoute path="/order-success" component={OrderSuccessPage} />
+      <Route path="/search" component={SearchPage} />
       <Route component={NotFound} />
     </Switch>
   );

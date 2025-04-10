@@ -40,8 +40,9 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement search functionality
-    console.log("Searching for:", searchTerm);
+    if (searchTerm.trim()) {
+      setLocation(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
   };
 
   const toggleCategorySidebar = () => {
