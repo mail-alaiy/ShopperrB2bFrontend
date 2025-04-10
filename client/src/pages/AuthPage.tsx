@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link, Redirect } from "wouter";
-import { z } from "zod";
+import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,21 +23,36 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  companyName: z.string().min(1, "Company name is required"),
-  city: z.string().min(1, "City is required"),
-  gstNumber: z
-    .string()
-    .min(15, "Valid GST number is required")
-    .max(15, "GST number must be 15 characters"),
-  email: z.string().email("Valid email address is required"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  state: z.string().optional(),
-  pincode: z.string().optional(),
-  address: z.string().optional(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    companyName: z.string().min(1, "Company name is required"),
+    city: z.string().min(1, "City is required"),
+    gstNumber: z
+      .string()
+      .min(15, "Valid GST number is required")
+      .max(15, "GST number must be 15 characters"),
+    email: z.string().email("Valid email address is required"),
+    phone: z.string().min(10, "Phone number must be at least 10 digits"),
+    state: z.string().optional(),
+    pincode: z.string().optional(),
+    address: z.string().optional(),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least one special character"
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -75,6 +91,7 @@ export default function AuthPage() {
       pincode: "",
       address: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -353,6 +370,29 @@ export default function AuthPage() {
                           <Input
                             type="password"
                             placeholder="Create a password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          Password must be at least 8 characters with 1
+                          uppercase letter, 1 lowercase letter, 1 number, and 1
+                          special character.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Confirm your password"
                             {...field}
                           />
                         </FormControl>
