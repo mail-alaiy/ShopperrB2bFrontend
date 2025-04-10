@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { useRoute, Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCartIcon, TruckIcon } from "lucide-react";
+import {
+  ShoppingCartIcon,
+  TruckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -50,9 +55,16 @@ export default function CategoryPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { user } = useAuth();
 
+  // Add page state inside the component
+  const [page, setPage] = useState(1);
+
   // Fetch products from the API
-  const { data: productsResponse, isLoading } = useQuery<ProductResponse>({
-    queryKey: [`/api/categories/${category}/products`],
+  const {
+    data: productsData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ["products", "category", category, page], // Include page in the query key
     queryFn: async () => {
       // Clean up the category string by:
       // 1. Replacing multiple hyphens with a single space
@@ -61,11 +73,10 @@ export default function CategoryPage() {
         .replace(/-+/g, " ")
         .replace(/,/g, "")
         .trim();
-      console.log(cleanCategory);
       const response = await fetch(
         `http://localhost:8002/products?query=${encodeURIComponent(
           cleanCategory
-        )}&limit=20&page=1`
+        )}&limit=20&page=${page}` // Use the page state here
       );
       if (!response.ok) {
         throw new Error("Failed to fetch products");
@@ -75,7 +86,7 @@ export default function CategoryPage() {
   });
 
   // Extract products from the response
-  const products = productsResponse?.payload || [];
+  const products = productsData?.payload || [];
 
   // Function to get the full image URL with S3 bucket prefix
   const getFullImageUrl = (imagePath: string) => {
@@ -93,6 +104,13 @@ export default function CategoryPage() {
   };
 
   const displayCategory = formatCategoryName(category);
+
+  // Add this function to handle page changes
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
@@ -117,9 +135,22 @@ export default function CategoryPage() {
           {/* Results Header */}
           <div className="bg-gray-100 p-3 rounded-md flex justify-between items-center mb-4">
             <p className="text-sm text-gray-600">
-              {isLoading
-                ? "Loading..."
-                : `${products.length} results for "${displayCategory}"`}
+              {isLoading ? (
+                "Loading..."
+              ) : (
+                <>
+                  {products.length === 0 ? (
+                    "No results found"
+                  ) : (
+                    <>
+                      Showing {(page - 1) * 20 + 1}-
+                      {(page - 1) * 20 + products.length} results for "
+                      {displayCategory}"
+                      {page > 1 && <span className="ml-1">- Page {page}</span>}
+                    </>
+                  )}
+                </>
+              )}
             </p>
 
             <div className="flex items-center gap-3">
@@ -392,6 +423,85 @@ export default function CategoryPage() {
               )}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center mt-8 mb-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1 || isLoading || isFetching}
+            className="h-8 w-8"
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {page > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handlePageChange(1)}
+                className="h-8 w-8"
+              >
+                1
+              </Button>
+            )}
+
+            {page > 3 && <span className="text-gray-500">...</span>}
+
+            {page > 2 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handlePageChange(page - 1)}
+                className="h-8 w-8"
+              >
+                {page - 1}
+              </Button>
+            )}
+
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-amber-400 hover:bg-amber-500 text-gray-900 h-8 w-8"
+            >
+              {page}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              className="h-8 w-8"
+              disabled={
+                isLoading ||
+                isFetching ||
+                (productsData?.payload?.length || 0) < 20
+              }
+            >
+              {page + 1}
+            </Button>
+
+            <span className="text-gray-500">...</span>
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={
+              isLoading ||
+              isFetching ||
+              (productsData?.payload?.length || 0) < 20
+            }
+            className="h-8 w-8"
+          >
+            <ChevronRightIcon className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

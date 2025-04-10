@@ -36,10 +36,7 @@ const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
 
 export default function CheckoutPage() {
   const [location, navigate] = useLocation();
-  const queryClient = useQueryClient();
   const [activeStep, setActiveStep] = useState("shipping");
-  const [shippingMethod, setShippingMethod] = useState("standard");
-  const [paymentMethod, setPaymentMethod] = useState("credit");
   const [cartProducts, setCartProducts] = useState<Record<string, Product>>({});
 
   // Fetch cart items (same as CartPage)
@@ -127,27 +124,65 @@ export default function CheckoutPage() {
     0
   );
 
-  const shipping =
-    shippingMethod === "standard"
-      ? subtotal > 50
-        ? 0
-        : 5.99
-      : shippingMethod === "expedited"
-      ? 12.99
-      : shippingMethod === "priority"
-      ? 19.99
-      : 0;
   const tax = subtotal * 0.07; // 7% tax
-  const total = subtotal + shipping + tax;
+  const total = subtotal + tax;
 
-  const handleSubmitShipping = (e: React.FormEvent) => {
+  const handleSubmitShipping = async (e: React.FormEvent) => {
     e.preventDefault();
-    setActiveStep("payment");
-  };
 
-  const handleSubmitPayment = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate("/order-confirmation");
+    try {
+      // Get form values
+      const firstName =
+        e.currentTarget.querySelector<HTMLInputElement>("#first-name")?.value ||
+        "";
+      const lastName =
+        e.currentTarget.querySelector<HTMLInputElement>("#last-name")?.value ||
+        "";
+      const recipientName = `${firstName} ${lastName}`.trim();
+
+      // Get country code and convert to full country name
+      const countryCode =
+        e.currentTarget.querySelector<HTMLSelectElement>("#country")?.value;
+      const countryName =
+        COUNTRIES.find((c) => c.code === countryCode)?.name || "India"; // Default to India if not found
+
+      // Create a draft order
+      const response = await apiRequest("POST", "http://localhost:8003/order", {
+        currency: "INR",
+        shippingPhoneNumber:
+          e.currentTarget.querySelector<HTMLInputElement>("#phone")?.value,
+        shippingAddress1:
+          e.currentTarget.querySelector<HTMLInputElement>("#address1")?.value,
+        shippingAddress2:
+          e.currentTarget.querySelector<HTMLInputElement>("#address2")?.value ||
+          "",
+        shippingAddress3:
+          e.currentTarget.querySelector<HTMLInputElement>("#address3")?.value ||
+          "",
+        recipientName: recipientName,
+        shippingCity:
+          e.currentTarget.querySelector<HTMLInputElement>("#city")?.value,
+        shippingState:
+          e.currentTarget.querySelector<HTMLInputElement>("#state")?.value,
+        shippingPostalCode:
+          e.currentTarget.querySelector<HTMLInputElement>("#zip")?.value,
+        shippingCountry: countryName, // Use the full country name instead of code
+        source: 1, // Default source value for web orders
+      });
+
+      console.log(response);
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      } else {
+        const order = await response.json();
+        // Extract order ID from the correct fields in the response
+        const orderId = order.payload?._id?.$oid;
+        navigate(`/order/${orderId}`);
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      // Show error message
+    }
   };
 
   if (isCartEmpty && !isLoadingCart) {
@@ -378,7 +413,7 @@ export default function CheckoutPage() {
                 <div>
                   <h2 className="text-xl font-bold mb-6">Payment Method</h2>
 
-                  <form onSubmit={handleSubmitPayment}>
+                  <form onSubmit={handleSubmitShipping}>
                     <div className="mb-6">
                       <div className="flex items-start space-x-4 border rounded-md p-4 bg-blue-50">
                         <div className="flex-1">
@@ -501,12 +536,7 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span className="font-medium">${subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span className="font-medium">
-                    {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
-                  </span>
-                </div>
+
                 <div className="flex justify-between">
                   <span>Estimated Tax</span>
                   <span className="font-medium">${tax.toFixed(2)}</span>

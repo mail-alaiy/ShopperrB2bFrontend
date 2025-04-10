@@ -23,13 +23,13 @@ export const queryClient = new QueryClient({
 // --- Helper function for logout ---
 function forceLogout() {
   console.error("Refresh token failed or missing. Forcing logout.");
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  queryClient.setQueryData(["/api/user"], null); // Clear user data
-  queryClient.invalidateQueries(); // Invalidate all queries
+  // localStorage.removeItem("access_token");
+  // localStorage.removeItem("refresh_token");
+  // queryClient.setQueryData(["/api/user"], null); // Clear user data
+  // queryClient.invalidateQueries(); // Invalidate all queries
   // Redirect to login page
   // Using window.location for simplicity as navigating from here can be tricky
-  window.location.href = "/auth?sessionExpired=true"; // Or your login route
+  // window.location.href = "/auth?sessionExpired=true"; // Or your login route
 }
 
 // --- Modified apiRequest ---

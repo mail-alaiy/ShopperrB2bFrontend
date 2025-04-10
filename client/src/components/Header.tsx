@@ -30,8 +30,6 @@ export default function Header() {
   const [location, setLocation] = useLocation();
   const { user, logoutMutation } = useAuth();
 
-  console.log(user);
-
   const { data: cartItems = [] } = useQuery<
     (CartItem & { product: Product })[]
   >({

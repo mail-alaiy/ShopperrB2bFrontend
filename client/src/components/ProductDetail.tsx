@@ -241,9 +241,9 @@ export default function ProductDetail({
                   <SelectItem value="ex-india">
                     Ex-India Customs (USD)
                   </SelectItem>
-                  <SelectItem value="doorstep">
+                  {/* <SelectItem value="doorstep">
                     Doorstep Delivery (USD)
-                  </SelectItem>
+                  </SelectItem> */}
                 </SelectContent>
               </Select>
               <div className="relative group">
