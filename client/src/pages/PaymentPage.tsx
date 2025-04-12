@@ -23,6 +23,8 @@ export default function PaymentPage() {
   const [, params] = useRoute("/order/:orderId");
   const queryClient = useQueryClient();
   const orderId = params?.orderId;
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Fetch order data
   const { data: orderData, isLoading } = useQuery({
@@ -48,32 +50,36 @@ export default function PaymentPage() {
   // Handle payment submission
   const handleSubmitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsProcessing(true);
+    setPaymentError(null);
 
     try {
-      // Process payment
+      // Process payment with the correct endpoint
       const response = await apiRequest(
-        "POST",
-        `http://localhost:8001/orders/${orderId}/pay`,
-        {
-          paymentMethod: "phonepe",
-        }
+        "GET",
+        `http://localhost:8005/payment/pay/${orderId}`
       );
 
       if (!response.ok) {
-        throw new Error("Payment failed");
+        throw new Error("Payment processing failed");
       }
 
       const paymentData = await response.json();
 
-      // Redirect to success page or payment gateway
-      if (paymentData.redirectUrl) {
-        window.location.href = paymentData.redirectUrl;
+      // Redirect to payment gateway
+      if (paymentData.paymentUrl) {
+        window.location.href = paymentData.paymentUrl;
       } else {
-        navigate("/order-success");
+        throw new Error("No payment URL received");
       }
     } catch (error) {
       console.error("Error processing payment:", error);
-      // Show error message
+      setPaymentError(
+        error instanceof Error
+          ? error.message
+          : "Payment failed. Please try again."
+      );
+      setIsProcessing(false);
     }
   };
 
@@ -152,6 +158,12 @@ export default function PaymentPage() {
             <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
               <h2 className="text-xl font-bold mb-6">Payment Method</h2>
 
+              {paymentError && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded text-red-800">
+                  {paymentError}
+                </div>
+              )}
+
               <form onSubmit={handleSubmitPayment}>
                 <div className="mb-6">
                   <div className="flex items-start space-x-4 border rounded-md p-4 bg-blue-50">
@@ -202,8 +214,35 @@ export default function PaymentPage() {
                   <Button
                     type="submit"
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                    disabled={isProcessing}
                   >
-                    Complete Payment
+                    {isProcessing ? (
+                      <div className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Processing...
+                      </div>
+                    ) : (
+                      "Complete Payment"
+                    )}
                   </Button>
                 </div>
               </form>

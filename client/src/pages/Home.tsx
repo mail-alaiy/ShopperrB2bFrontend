@@ -26,54 +26,89 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+// Define Product type (similar to CategoryPage)
+interface ProductImage {
+  position: number;
+  src: string;
+  varient_id: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  handle: string;
+  price: number;
+  mrp: number;
+  sp: number;
+  quantity: number;
+  description: string;
+  imgUrl: ProductImage[];
+  brand?: string;
+  category: string;
+  code: string;
+}
+
 export default function Home() {
   const { data: products, isLoading } = useQuery({
     queryKey: ["/api/products"],
   });
 
-  // Define category items
-  const categories = [
-    {
-      name: "Computers",
-      icon: <LaptopIcon className="h-10 w-10" />,
-      url: "/categories/computers",
-    },
-    {
-      name: "Monitors",
-      icon: <MonitorIcon className="h-10 w-10" />,
-      url: "/categories/monitors",
-    },
-    {
-      name: "Printers",
-      icon: <PrinterIcon className="h-10 w-10" />,
-      url: "/categories/printers",
-    },
-    {
-      name: "Keyboards",
-      icon: <KeyboardIcon className="h-10 w-10" />,
-      url: "/categories/keyboards",
-    },
-    {
-      name: "Mice",
-      icon: <MouseIcon className="h-10 w-10" />,
-      url: "/categories/mice",
-    },
-    {
-      name: "Headphones",
-      icon: <HeadphonesIcon className="h-10 w-10" />,
-      url: "/categories/headphones",
-    },
-    {
-      name: "Storage",
-      icon: <HardDriveIcon className="h-10 w-10" />,
-      url: "/categories/storage",
-    },
-    {
-      name: "Office Supplies",
-      icon: <BriefcaseIcon className="h-10 w-10" />,
-      url: "/categories/office-supplies",
-    },
+  // Get categories data
+  // const { categories } = useCategories();
+
+  // const topLevelCategories = categories?.map((cat) => cat.category) ?? [];
+  // console.log(topLevelCategories);
+  // Use hardcoded categories
+  const topLevelCategories = [
+    "Baby",
+    "Bags, Wallets and Luggage",
+    "Beauty",
+    "Electronics",
+    "Gift Cards",
+    "Home Improvement",
   ];
+
+  // Fetch first 3 products for each top-level category
+  const categoryProducts = useQuery<Record<string, Product[]>>({
+    queryKey: ["categoryProducts", topLevelCategories], // Use the hardcoded array directly
+    queryFn: async () => {
+      const results: Record<string, Product[]> = {};
+      const categoriesToFetch = topLevelCategories; // No need to slice now
+
+      const fetchPromises = categoriesToFetch.map(async (category) => {
+        const cleanCategory = category
+          .replace(/-+/g, " ")
+          .replace(/,/g, "")
+          .trim();
+        const response = await fetch(
+          `http://localhost:8002/products?query=${encodeURIComponent(
+            cleanCategory
+          )}&limit=3`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          return { category, products: data.payload || [] };
+        }
+        return { category, products: [] }; // Return empty array on error
+      });
+
+      const settledResults = await Promise.all(fetchPromises);
+
+      settledResults.forEach((result) => {
+        results[result.category] = result.products;
+      });
+
+      return results;
+    },
+    enabled: topLevelCategories.length > 0,
+  });
+
+  // Function to get the full image URL
+  const getFullImageUrl = (imagePath: string) => {
+    if (!imagePath) return "/placeholder-image.jpg";
+    if (imagePath.startsWith("http")) return imagePath;
+    return `https://shopperrcdn.shopperr.in/${imagePath}png`;
+  };
 
   // Carousel images
   const carouselImages = [
@@ -132,9 +167,69 @@ export default function Home() {
           </Carousel>
         </div>
 
+        {/* Category Products Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {topLevelCategories.map((category) => (
+              <div
+                key={category}
+                className="bg-white p-4 rounded-lg border border-gray-200"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold">{category}</h3>
+                  <Link
+                    href={`/categories/${category
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                  >
+                    <a className="text-sm text-blue-600 hover:underline">
+                      See more
+                    </a>
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {categoryProducts.isLoading
+                    ? Array(3)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div key={i} className="flex flex-col items-center">
+                            <Skeleton className="h-20 w-20 mb-2" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        ))
+                    : (categoryProducts.data?.[category] || []).map(
+                        (product: Product) => (
+                          <Link
+                            key={product._id}
+                            href={`/products/${product._id}`}
+                          >
+                            <a className="flex flex-col items-center">
+                              <div className="h-20 w-20 flex items-center justify-center bg-gray-50 p-1 mb-1 border border-gray-100">
+                                <img
+                                  src={getFullImageUrl(
+                                    product.imgUrl?.[0]?.src
+                                  )}
+                                  alt={product.name}
+                                  className="max-h-full max-w-full object-contain"
+                                />
+                              </div>
+                              <p className="text-xs text-center line-clamp-2">
+                                {product.name}
+                              </p>
+                            </a>
+                          </Link>
+                        )
+                      )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Amazon-style Content Blocks */}
-        <div className="mb-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Pick up where you left off */}
+        {/* <div className="mb-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg border border-gray-200">
             <h2 className="text-lg font-bold mb-4">
               Pick up where you left off
@@ -166,10 +261,10 @@ export default function Home() {
                 </a>
               </Link>
             </div>
-          </div>
+          </div> */}
 
-          {/* Continue shopping deals */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
+        {/* Continue shopping deals */}
+        {/* <div className="bg-white p-4 rounded-lg border border-gray-200">
             <h2 className="text-lg font-bold mb-4">Continue shopping deals</h2>
 
             <div className="grid grid-cols-2 gap-3">
@@ -198,10 +293,10 @@ export default function Home() {
                 </a>
               </Link>
             </div>
-          </div>
+          </div> */}
 
-          {/* Buy again */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
+        {/* Buy again */}
+        {/* <div className="bg-white p-4 rounded-lg border border-gray-200">
             <h2 className="text-lg font-bold mb-4">Buy again</h2>
 
             <div className="grid grid-cols-2 gap-3">
@@ -233,10 +328,10 @@ export default function Home() {
                 </a>
               </Link>
             </div>
-          </div>
+          </div> */}
 
-          {/* Get bulk discounts */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col">
+        {/* Get bulk discounts */}
+        {/* <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col">
             <h2 className="text-lg font-bold mb-2">
               Get bulk discounts + Top B2B deals !!
             </h2>
@@ -256,10 +351,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Top Selling Items */}
-        <div className="mb-12 bg-white rounded-lg p-4 border border-gray-200">
+        {/* <div className="mb-12 bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Top Selling Items</h2>
             <Link href="/top-selling">
@@ -303,7 +398,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Featured Deals Section */}
         {/* <div className="mb-16">

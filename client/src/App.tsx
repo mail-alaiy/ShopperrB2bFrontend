@@ -15,9 +15,8 @@ import OrderSuccessPage from "@/pages/OrderSuccessPage";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/lib/protected-route";
 import { CategoryProvider } from "./hooks/use-categories";
-import SearchPage from "@/pages/SearchPage";
+import PaymentPage from "./pages/PaymentPage";
 
 function Router() {
   return (
@@ -28,11 +27,11 @@ function Router() {
       <Route path="/subcategories/:category" component={CategoryPage} />
       <Route path="/cart" component={CartPage} />
       <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/checkout" component={CheckoutPage} />
-      <ProtectedRoute path="/profile" component={ProfilePage} />
-      <ProtectedRoute path="/orders" component={OrdersPage} />
-      <ProtectedRoute path="/order-success" component={OrderSuccessPage} />
-      <Route path="/search" component={SearchPage} />
+      <Route path="/checkout" component={CheckoutPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/orders" component={OrdersPage} />
+      <Route path="/order/:orderId" component={PaymentPage} />
+      <Route path="/order-success" component={OrderSuccessPage} />
       <Route component={NotFound} />
     </Switch>
   );
