@@ -78,14 +78,21 @@ export async function apiRequest(
       
       // Check specifically for 422 (or potentially 401 depending on your API)
       // **IMPORTANT**: Confirm with your API documentation if 422 is correct for expired *access* tokens. Often it's 401. Adjust the status code check if needed.
-      if ((response.status === 422 || response.status === 401) && !isRetry) {
+      if (
+        (response.status === 422 ||
+          response.status === 401 ||
+          response.status === 403) &&
+        !isRetry
+      ) {
         console.log(
           `[Token Refresh] Access token expired (${response.status} received). Attempting refresh...`
         );
         const refreshToken = localStorage.getItem("refresh_token");
 
         if (!refreshToken) {
-          console.log("[Token Refresh] No refresh token found. Forcing logout.");
+          console.log(
+            "[Token Refresh] No refresh token found. Forcing logout."
+          );
           forceLogout();
           throw new Error("Session expired. No refresh token."); // Throw error after logout
         }
@@ -100,8 +107,10 @@ export async function apiRequest(
             },
           });
 
-          console.log(`[Token Refresh] Response status: ${refreshResponse.status}`);
-          
+          console.log(
+            `[Token Refresh] Response status: ${refreshResponse.status}`
+          );
+
           if (!refreshResponse.ok) {
             // If refresh fails (e.g., 422), logout
             console.log(
@@ -114,12 +123,17 @@ export async function apiRequest(
           }
 
           const refreshData = await refreshResponse.json();
-          console.log(`[Token Refresh] Response data:`, Object.keys(refreshData));
-          
+          console.log(
+            `[Token Refresh] Response data:`,
+            Object.keys(refreshData)
+          );
+
           const newAccessToken = refreshData.access_token; // Adjust if the key name is different
 
           if (!newAccessToken) {
-            console.log("[Token Refresh] Refresh response did not contain a new access token.");
+            console.log(
+              "[Token Refresh] Refresh response did not contain a new access token."
+            );
             forceLogout();
             throw new Error("Session expired. Invalid refresh response."); // Throw error after logout
           }
@@ -128,12 +142,17 @@ export async function apiRequest(
           localStorage.setItem("access_token", newAccessToken);
 
           // --- Retry Original Request ---
-          console.log("[Token Refresh] Retrying original request with new token...");
+          console.log(
+            "[Token Refresh] Retrying original request with new token..."
+          );
           // Call apiRequest again, marking it as a retry to prevent loops
           // Pass the *original* relative URL
           return await apiRequest(method, url, data, true);
         } catch (refreshError) {
-          console.error("[Token Refresh] Error during token refresh:", refreshError);
+          console.error(
+            "[Token Refresh] Error during token refresh:",
+            refreshError
+          );
           // Ensure logout happens even if the refresh fetch itself throws an error
           forceLogout();
           // Re-throw the error that caused the logout
@@ -143,7 +162,9 @@ export async function apiRequest(
         // If it's not a 422/401 or it's already a retry, throw the error
         const errorText = await response.text();
         console.log(
-          `[API Error] Request failed with status ${response.status}, not refreshing ${isRetry ? '(already retried)' : ''}.`
+          `[API Error] Request failed with status ${
+            response.status
+          }, not refreshing ${isRetry ? "(already retried)" : ""}.`
         );
         console.log(`[API Error] Error details:`, errorText);
         throw new Error(

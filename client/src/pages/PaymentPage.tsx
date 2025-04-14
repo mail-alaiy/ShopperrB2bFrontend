@@ -33,7 +33,7 @@ export default function PaymentPage() {
       try {
         const response = await apiRequest(
           "GET",
-          `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/orders/${orderId}`
+          `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/order/${orderId}`
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch order: ${response.status}`);
@@ -59,7 +59,7 @@ export default function PaymentPage() {
         "GET",
         `${
           import.meta.env.VITE_REACT_APP_PAYMENT_API_URL
-        }/payment/pay/${orderId}`
+        }/pay/${orderId}`
       );
 
       if (!response.ok) {
