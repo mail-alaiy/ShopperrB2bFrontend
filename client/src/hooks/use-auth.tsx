@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error,
     isLoading,
   } = useQuery<MeResponseUser | null, Error, User | null>({
-    queryKey: [`${API_BASE_URL}/users/me`],
+    queryKey: [`${API_BASE_URL}/me`],
     enabled: !!localStorage.getItem("access_token"),
     select: (data: MeResponseUser | null): User | null => {
       if (!data) {
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginUser) => {
-      const res = await fetch(`${API_BASE_URL}/users/login`, {
+      const res = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password: credentials.password,
       };
 
-      const res = await fetch(`${API_BASE_URL}/users/signup`, {
+      const res = await fetch(`${API_BASE_URL}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

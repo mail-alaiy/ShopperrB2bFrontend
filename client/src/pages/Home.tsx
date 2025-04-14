@@ -77,7 +77,7 @@ export default function Home() {
         const response = await fetch(
           `${
             import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL
-          }/products?query=${encodeURIComponent(cleanCategory)}&limit=3`
+          }?query=${encodeURIComponent(cleanCategory)}&limit=3`
         );
         if (response.ok) {
           const data = await response.json();

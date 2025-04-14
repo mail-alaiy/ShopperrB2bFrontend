@@ -49,7 +49,7 @@ export default function CheckoutPage() {
     refetchOnMount: "always", // Always refetch when component mounts
     queryFn: async () => {
       try {
-        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart`);
+        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}`);
         if (!response.ok)
           throw new Error(`Failed to fetch cart items: ${response.status}`);
         const data = await response.json();
@@ -149,7 +149,7 @@ export default function CheckoutPage() {
       // Create a draft order
       const response = await apiRequest(
         "POST",
-        `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/order`,
+        `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/`,
         {
           currency: "INR",
           shippingPhoneNumber:

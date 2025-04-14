@@ -77,7 +77,7 @@ export default function CategoryPage() {
         .replace(/&/g, "")
         .trim();
       const response = await fetch(
-        `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}/products?query=${encodeURIComponent(
+        `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}?query=${encodeURIComponent(
           cleanCategory
         )}&limit=20&page=${page}` // Use the page state here
       );

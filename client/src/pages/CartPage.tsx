@@ -48,7 +48,7 @@ export default function CartPage() {
     queryFn: async () => {
       console.log("Attempting to fetch cart data");
       try {
-        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart`);
+        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}`);
 
         console.log("Cart API response status:", response.status);
 
@@ -176,7 +176,7 @@ export default function CartPage() {
 
   const updateCartMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      return apiRequest("PATCH", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart/items/${id}`, {
+      return apiRequest("PATCH", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/items/${id}`, {
         quantity,
       });
     },
@@ -188,7 +188,7 @@ export default function CartPage() {
 
   const removeFromCartMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart/items/${id}`);
+      return apiRequest("DELETE", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/items/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });

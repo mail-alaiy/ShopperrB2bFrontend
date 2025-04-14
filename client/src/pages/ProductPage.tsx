@@ -118,7 +118,6 @@ export default function ProductPage() {
     ].filter((feature) => !feature.includes("undefined")),
   };
 
-  console.log(transformedProduct);
 
   return (
     <div className="container mx-auto px-4 py-2">
