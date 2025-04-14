@@ -49,7 +49,7 @@ export default function CheckoutPage() {
     refetchOnMount: "always", // Always refetch when component mounts
     queryFn: async () => {
       try {
-        const response = await apiRequest("GET", "http://localhost:8001/cart");
+        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart`);
         if (!response.ok)
           throw new Error(`Failed to fetch cart items: ${response.status}`);
         const data = await response.json();
@@ -71,7 +71,7 @@ export default function CheckoutPage() {
         const productIds = Object.keys(cartData.items);
         const response = await apiRequest(
           "POST",
-          "http://localhost:8002/multiple-products",
+          `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}/multiple-products`,
           { product_ids: productIds }
         );
 
@@ -147,28 +147,32 @@ export default function CheckoutPage() {
         COUNTRIES.find((c) => c.code === countryCode)?.name || "India"; // Default to India if not found
 
       // Create a draft order
-      const response = await apiRequest("POST", "http://localhost:8003/order", {
-        currency: "INR",
-        shippingPhoneNumber:
-          e.currentTarget.querySelector<HTMLInputElement>("#phone")?.value,
-        shippingAddress1:
-          e.currentTarget.querySelector<HTMLInputElement>("#address1")?.value,
-        shippingAddress2:
-          e.currentTarget.querySelector<HTMLInputElement>("#address2")?.value ||
-          "",
-        shippingAddress3:
-          e.currentTarget.querySelector<HTMLInputElement>("#address3")?.value ||
-          "",
-        recipientName: recipientName,
-        shippingCity:
-          e.currentTarget.querySelector<HTMLInputElement>("#city")?.value,
-        shippingState:
-          e.currentTarget.querySelector<HTMLInputElement>("#state")?.value,
-        shippingPostalCode:
-          e.currentTarget.querySelector<HTMLInputElement>("#zip")?.value,
-        shippingCountry: countryName, // Use the full country name instead of code
-        source: 1, // Default source value for web orders
-      });
+      const response = await apiRequest(
+        "POST",
+        `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/order`,
+        {
+          currency: "INR",
+          shippingPhoneNumber:
+            e.currentTarget.querySelector<HTMLInputElement>("#phone")?.value,
+          shippingAddress1:
+            e.currentTarget.querySelector<HTMLInputElement>("#address1")?.value,
+          shippingAddress2:
+            e.currentTarget.querySelector<HTMLInputElement>("#address2")
+              ?.value || "",
+          shippingAddress3:
+            e.currentTarget.querySelector<HTMLInputElement>("#address3")
+              ?.value || "",
+          recipientName: recipientName,
+          shippingCity:
+            e.currentTarget.querySelector<HTMLInputElement>("#city")?.value,
+          shippingState:
+            e.currentTarget.querySelector<HTMLInputElement>("#state")?.value,
+          shippingPostalCode:
+            e.currentTarget.querySelector<HTMLInputElement>("#zip")?.value,
+          shippingCountry: countryName, // Use the full country name instead of code
+          source: 1, // Default source value for web orders
+        }
+      );
 
       console.log(response);
       if (!response.ok) {
@@ -198,7 +202,7 @@ export default function CheckoutPage() {
               You need to add items to your cart before proceeding to checkout.
             </p>
             <Link href="/">
-              <Button className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-medium">
+              <Button className="bg-[#62c8f5] hover:bg-[#06184b] hover:text-white text-gray-900 font-medium">
                 Continue Shopping
               </Button>
             </Link>
@@ -214,7 +218,11 @@ export default function CheckoutPage() {
         <div className="flex items-center justify-center mb-8">
           <Link href="/">
             <a className="text-2xl font-bold mr-6">
-              Shopperr<span className="text-amber-500">B2B</span>
+              <img
+                src="/Shopperr Logo.png"
+                alt="ShopperrB2B Logo"
+                className="h-8 w-auto"
+              />
             </a>
           </Link>
         </div>
@@ -399,7 +407,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-end">
                         <Button
                           type="submit"
-                          className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-medium"
+                          className="bg-[#62c8f5] hover:bg-[#06184b] hover:text-white text-gray-900 font-medium"
                         >
                           Continue to Payment
                         </Button>

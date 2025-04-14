@@ -34,7 +34,9 @@ type CategoryContextType = {
 export const CategoryContext = createContext<CategoryContextType | null>(null);
 
 // Define the base URL for the categories API
-const CATEGORIES_API_URL = "http://localhost:8002/categories"; // Replace if needed
+const CATEGORIES_API_URL = `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}/categories`;
+
+console.log(CATEGORIES_API_URL);
 
 // Create the provider component
 export function CategoryProvider({ children }: { children: ReactNode }) {

@@ -61,7 +61,7 @@ export default function OrdersPage() {
       try {
         const response = await apiRequest(
           "GET",
-          "http://localhost:8003/orders"
+          `${import.meta.REACT_APP_CHECKOUT_API_URL}/orders`
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch orders: ${response.status}`);

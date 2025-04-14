@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import ProductListView from "@/components/ProductListView";
 
 // Add this constant for the S3 bucket URL
 const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
@@ -69,12 +70,14 @@ export default function CategoryPage() {
       // Clean up the category string by:
       // 1. Replacing multiple hyphens with a single space
       // 2. Removing any commas
+      // 3. Removing ampersands
       const cleanCategory = category
         .replace(/-+/g, " ")
         .replace(/,/g, "")
+        .replace(/&/g, "")
         .trim();
       const response = await fetch(
-        `http://localhost:8002/products?query=${encodeURIComponent(
+        `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}/products?query=${encodeURIComponent(
           cleanCategory
         )}&limit=20&page=${page}` // Use the page state here
       );
@@ -327,101 +330,11 @@ export default function CategoryPage() {
               )}
             </div>
           ) : (
-            // List view - Amazon style
-            <div className="space-y-6">
-              {products.map((product) => (
-                <div
-                  key={product._id}
-                  className="border rounded-md bg-white p-4 hover:shadow-md transition duration-200 flex flex-col sm:flex-row gap-4"
-                >
-                  <Link href={`/products/${product._id}`}>
-                    <a className="block sm:w-36 md:w-48 shrink-0">
-                      <div className="h-48 sm:h-36 md:h-40 flex items-center justify-center">
-                        <img
-                          src={getFullImageUrl(product.imgUrl[0]?.src)}
-                          alt={product.name}
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </div>
-                    </a>
-                  </Link>
-
-                  <div className="flex-grow">
-                    <Link href={`/products/${product._id}`}>
-                      <a className="block">
-                        <h3 className="text-lg font-semibold text-blue-600 hover:underline mb-1">
-                          {product.name}
-                        </h3>
-                        <div className="mb-2 font-medium">
-                          {/* <span className="text-xl font-bold">
-                            ₹{product.sp.toFixed(2)}
-                          </span>
-                          {product.mrp > product.sp && (
-                            <>
-                              <span className="text-gray-500 line-through text-sm ml-2">
-                                ₹{product.mrp.toFixed(2)}
-                              </span>
-                              <span className="text-green-600 text-sm ml-2">
-                                Save{" "}
-                                {Math.round(
-                                  (1 - product.sp / product.mrp) * 100
-                                )}
-                                %
-                              </span>
-                            </>
-                          )} */}
-                        </div>
-                      </a>
-                    </Link>
-
-                    <div className="space-y-1 mb-3 text-sm text-gray-700">
-                      {/* <div className="flex items-start">
-                        <span className="text-blue-600 flex items-center">
-                          <TruckIcon className="h-3 w-3 mr-1" />
-                          FREE Business Shipping
-                        </span>
-                      </div>
-                      <div>
-                        <span>
-                          Brand:{" "}
-                          <span className="font-medium">{product.brand}</span>
-                        </span>
-                      </div> */}
-                      <div className="line-clamp-2 text-gray-600">
-                        {product.description?.substring(0, 150)}...
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Link href={`/products/${product._id}`}>
-                        <a>
-                          <Button className="bg-amber-400 hover:bg-amber-500 text-gray-900">
-                            <ShoppingCartIcon className="w-4 h-4 mr-2" />
-                            View Product
-                          </Button>
-                        </a>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {products.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-xl text-gray-600">
-                    No products found in this category.
-                  </p>
-                  <p className="mt-2 text-gray-500">
-                    Try a different category or check out our other offerings.
-                  </p>
-                  <Link href="/">
-                    <a>
-                      <Button className="mt-4">Continue Shopping</Button>
-                    </a>
-                  </Link>
-                </div>
-              )}
-            </div>
+            // List view
+            <ProductListView
+              products={products}
+              getFullImageUrl={getFullImageUrl}
+            />
           )}
         </div>
       </div>

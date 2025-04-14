@@ -17,6 +17,8 @@ import Footer from "@/components/Footer";
 import { AuthProvider } from "@/hooks/use-auth";
 import { CategoryProvider } from "./hooks/use-categories";
 import PaymentPage from "./pages/PaymentPage";
+import SearchPage from "@/pages/SearchPage";
+import { SearchProvider } from "./context/SearchContext";
 
 function Router() {
   return (
@@ -32,6 +34,7 @@ function Router() {
       <Route path="/orders" component={OrdersPage} />
       <Route path="/order/:orderId" component={PaymentPage} />
       <Route path="/order-success" component={OrderSuccessPage} />
+      <Route path="/search" component={SearchPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -45,20 +48,22 @@ function App() {
   const hideHeaderFooter = isCheckout || isAuthPage || isOrderSuccess;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CategoryProvider>
-          <div className="flex flex-col min-h-screen">
-            {!hideHeaderFooter && <Header />}
-            <main className="flex-grow">
-              <Router />
-            </main>
-            {!hideHeaderFooter && <Footer />}
-          </div>
-          <Toaster />
-        </CategoryProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <SearchProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <CategoryProvider>
+            <div className="flex flex-col min-h-screen">
+              {!hideHeaderFooter && <Header />}
+              <main className="flex-grow">
+                <Router />
+              </main>
+              {!hideHeaderFooter && <Footer />}
+            </div>
+            <Toaster />
+          </CategoryProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </SearchProvider>
   );
 }
 

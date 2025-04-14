@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -23,6 +23,9 @@ import { CartItem, Product } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useCategories } from "@/hooks/use-categories";
 
+import { useDebounce } from "@/hooks/use-debounce";
+import { useSearch } from "@/context/SearchContext";
+
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -37,6 +40,20 @@ export default function Header() {
   });
 
   const cartItemCount = cartItems.length || 0;
+
+  const [searchValue, setSearchValue] = useState("");
+  const debouncedSearchValue = useDebounce(searchValue, 300);
+
+  const { setSearchValue: setSearchValueFromContext } = useSearch();
+
+  useEffect(() => {
+    if (debouncedSearchValue.trim()) {
+      setSearchValueFromContext(debouncedSearchValue.trim());
+      setLocation(
+        `/search?q=${encodeURIComponent(debouncedSearchValue.trim())}`
+      );
+    }
+  }, [debouncedSearchValue, setLocation, setSearchValueFromContext]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +72,16 @@ export default function Header() {
   return (
     <header>
       {/* Top navigation bar */}
-      <div className="bg-[#131921] text-white">
+      <div className="bg-[#06184b] text-white">
         <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold mr-6">
-              Shopperr<span className="text-[#febd69]">B2B</span>
+            <Link href="/" className="mr-6">
+              <img
+                src="/Shopperr white logo.png"
+                alt="ShopperrB2B Logo"
+                className="h-8 w-auto"
+              />
             </Link>
 
             {/* Search bar - hidden on mobile */}
@@ -71,11 +92,16 @@ export default function Header() {
                   placeholder="Search products"
                   className="w-full rounded-l-md rounded-r-none border-0 text-black"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (e.target.value.trim().length >= 3) {
+                      setSearchValue(e.target.value);
+                    }
+                  }}
                 />
                 <Button
                   type="submit"
-                  className="rounded-l-none bg-[#febd69] hover:bg-amber-500 text-black"
+                  className="rounded-l-none bg-[#ffd701] hover:bg-[#06184b] hover:text-white text-black"
                 >
                   <SearchIcon className="h-4 w-4" />
                 </Button>
@@ -159,11 +185,16 @@ export default function Header() {
               placeholder="Search products"
               className="w-full rounded-l-md rounded-r-none border-0 text-black"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value.trim().length >= 3) {
+                  setSearchValue(e.target.value);
+                }
+              }}
             />
             <Button
               type="submit"
-              className="rounded-l-none bg-[#febd69] hover:bg-amber-500 text-black"
+              className="rounded-l-none bg-[#ffd701] hover:bg-[#06184b] hover:text-white text-black"
             >
               <SearchIcon className="h-4 w-4" />
             </Button>
@@ -172,8 +203,8 @@ export default function Header() {
       </div>
 
       {/* Secondary navigation */}
-      <div className="bg-[#232f3e] py-1 px-4">
-        <div className="container mx-auto flex items-center text-sm text-white overflow-x-auto">
+      <div className="bg-[#62c8f5] py-1 px-4">
+        <div className="container mx-auto flex items-center text-sm text-[#06184b] overflow-x-auto">
           <button
             onClick={toggleCategorySidebar}
             className="mr-4 whitespace-nowrap flex items-center cursor-pointer"

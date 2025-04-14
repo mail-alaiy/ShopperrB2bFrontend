@@ -106,7 +106,7 @@ export default function ProductDetail({
 
       return apiRequest(
         "POST",
-        `http://localhost:8001/cart/items/${product.id}`,
+        `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart/items/${product.id}`,
         data
       );
     },

@@ -33,7 +33,7 @@ export default function PaymentPage() {
       try {
         const response = await apiRequest(
           "GET",
-          `http://localhost:8003/orders/${orderId}`
+          `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/orders/${orderId}`
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch order: ${response.status}`);
@@ -57,7 +57,9 @@ export default function PaymentPage() {
       // Process payment with the correct endpoint
       const response = await apiRequest(
         "GET",
-        `http://localhost:8005/payment/pay/${orderId}`
+        `${
+          import.meta.env.VITE_REACT_APP_PAYMENT_API_URL
+        }/payment/pay/${orderId}`
       );
 
       if (!response.ok) {
@@ -112,7 +114,7 @@ export default function PaymentPage() {
             The order you're looking for could not be found.
           </p>
           <Link href="/cart">
-            <Button className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-medium">
+            <Button className="bg-[#62c8f5] hover:bg-[#06184b] hover:text-white text-gray-900 font-medium">
               Return to Cart
             </Button>
           </Link>

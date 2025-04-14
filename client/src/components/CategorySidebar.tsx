@@ -50,7 +50,7 @@ export default function CategorySidebar({
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-lg overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center p-4 bg-[#232f3e] text-white">
+        <div className="flex items-center p-4 bg-[#06184b] text-white">
           <span className="text-xl font-bold flex-1">Shop By Category</span>
           <Button
             variant="ghost"

@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
 // Get the base URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_USER_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_USER_API_URL;
 
 type AuthResponse = {
   access_token: string;

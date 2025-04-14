@@ -48,7 +48,7 @@ export default function CartPage() {
     queryFn: async () => {
       console.log("Attempting to fetch cart data");
       try {
-        const response = await apiRequest("GET", "http://localhost:8001/cart");
+        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart`);
 
         console.log("Cart API response status:", response.status);
 
@@ -83,7 +83,7 @@ export default function CartPage() {
         console.log("Sending request to multiple-products endpoint");
         const response = await apiRequest(
           "POST",
-          "http://localhost:8002/multiple-products",
+          `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}/multiple-products`,
           { product_ids: productIds }
         );
 
@@ -176,7 +176,7 @@ export default function CartPage() {
 
   const updateCartMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      return apiRequest("PATCH", `http://localhost:8001/cart/items/${id}`, {
+      return apiRequest("PATCH", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart/items/${id}`, {
         quantity,
       });
     },
@@ -188,7 +188,7 @@ export default function CartPage() {
 
   const removeFromCartMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `http://localhost:8001/cart/items/${id}`);
+      return apiRequest("DELETE", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/cart/items/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
@@ -261,7 +261,7 @@ export default function CartPage() {
                 Browse our products and find something for your business!
               </p>
               <Link href="/">
-                <Button className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-medium">
+                <Button className="bg-[#62c8f5] hover:bg-[#06184b] hover:text-white text-gray-900 font-medium">
                   Continue Shopping
                 </Button>
               </Link>
@@ -481,7 +481,7 @@ export default function CartPage() {
                   </div> */}
 
                   <Link href="/checkout">
-                    <Button className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-medium mb-3">
+                    <Button className="w-full bg-[#62c8f5] hover:bg-[#06184b] hover:text-white text-gray-900 font-medium mb-3">
                       Proceed to Checkout
                     </Button>
                   </Link>

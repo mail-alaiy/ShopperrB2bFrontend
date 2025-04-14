@@ -2,7 +2,7 @@ import { Link } from "wouter";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#232f3e] text-white mt-10 pt-10 pb-6">
+    <footer className="bg-[#06184b] text-white mt-10 pt-10 pb-6">
       <div className="container mx-auto px-4">
         {/*  <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -54,7 +54,13 @@ export default function Footer() {
         <div className="text-center">
           <Link href="/">
             <a className="text-2xl font-bold mb-4 inline-block">
-              Shopperr<span className="text-[#febd69]">B2B</span>
+              <Link href="/" className="mr-6">
+                <img
+                  src="/Shopperr white logo.png"
+                  alt="ShopperrB2B Logo"
+                  className="h-8 w-auto"
+                />
+              </Link>
             </a>
           </Link>
           <div className="text-xs text-gray-400">

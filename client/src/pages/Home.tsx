@@ -25,6 +25,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useCategories } from "@/hooks/use-categories";
 
 // Define Product type (similar to CategoryPage)
 interface ProductImage {
@@ -54,19 +55,11 @@ export default function Home() {
   });
 
   // Get categories data
-  // const { categories } = useCategories();
+  const { categories } = useCategories();
 
-  // const topLevelCategories = categories?.map((cat) => cat.category) ?? [];
-  // console.log(topLevelCategories);
-  // Use hardcoded categories
-  const topLevelCategories = [
-    "Baby",
-    "Bags, Wallets and Luggage",
-    "Beauty",
-    "Electronics",
-    "Gift Cards",
-    "Home Improvement",
-  ];
+  const topLevelCategories = categories?.slice(0,6)?.map((cat) => cat.category) ?? [];
+  console.log(topLevelCategories);
+
 
   // Fetch first 3 products for each top-level category
   const categoryProducts = useQuery<Record<string, Product[]>>({
@@ -79,11 +72,12 @@ export default function Home() {
         const cleanCategory = category
           .replace(/-+/g, " ")
           .replace(/,/g, "")
+          .replace(/&/g, "")
           .trim();
         const response = await fetch(
-          `http://localhost:8002/products?query=${encodeURIComponent(
-            cleanCategory
-          )}&limit=3`
+          `${
+            import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL
+          }/products?query=${encodeURIComponent(cleanCategory)}&limit=3`
         );
         if (response.ok) {
           const data = await response.json();

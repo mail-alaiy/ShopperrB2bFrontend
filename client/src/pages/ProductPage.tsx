@@ -19,7 +19,7 @@ export default function ProductPage() {
     queryKey: [`/product/${productId}`],
     enabled: productId !== "0",
     queryFn: () =>
-      fetch(`http://localhost:8002/product/${productId}`).then((res) =>
+      fetch(`${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}/product/${productId}`).then((res) =>
         res.json()
       ),
   });

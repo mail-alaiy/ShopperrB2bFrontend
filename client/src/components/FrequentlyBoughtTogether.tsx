@@ -175,7 +175,7 @@ export default function FrequentlyBoughtTogether({ productId }: FrequentlyBought
           </div>
           
           <Button 
-            className="w-full bg-amber-400 hover:bg-amber-500 text-black"
+            className="w-full bg-[#62c8f5] hover:bg-[#06184b] hover:text-white text-black"
             onClick={handleAddAllToCart}
             disabled={addToCartMutation.isPending}
           >

@@ -199,7 +199,7 @@ export default function ProductDetailTabs({ product }: ProductDetailTabsProps) {
                   <div className="w-24">{stars} star</div>
                   <div className="w-full max-w-md bg-gray-200 rounded-full h-2.5">
                     <div
-                      className="bg-amber-400 h-2.5 rounded-full"
+                      className="bg-[#62c8f5] h-2.5 rounded-full"
                       style={{
                         width:
                           stars === 5

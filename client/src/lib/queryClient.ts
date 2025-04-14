@@ -1,6 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE_URL = import.meta.env.VITE_USER_API_BASE_URL;
+const API_BASE_URL = import.meta.env.REACT_APP_USER_API_URL;
 
 // Define queryClient here or import it if defined elsewhere and exported
 // If defined below, move its definition up or import.
