@@ -24,12 +24,32 @@ export default function ProductPage() {
       ),
   });
 
-  const product = data?.payload;
+  // Parse variable pricing data into price tiers expected by ProductDetail
+  const parsePriceTiers = (variablePricing: any[]) => {
+    if (!variablePricing || !Array.isArray(variablePricing) || variablePricing.length === 0) {
+      return [];
+    }
 
-  const { data: priceTiers, isLoading: isLoadingPriceTiers } = useQuery({
-    queryKey: [`/api/products/${productId}/price-tiers`],
-    enabled: !!product,
-  });
+    return variablePricing.map(tier => {
+      const key = Object.keys(tier)[0];
+      const price = tier[key];
+
+      if (key.includes('>')) {
+        // Handle ">100" case
+        const minQuantity = parseInt(key.replace('>', ''));
+        return { minQuantity, maxQuantity: 999999, price };
+      } else if (key.includes('-')) {
+        // Handle "1-15" case
+        const [min, max] = key.split('-').map(n => parseInt(n));
+        return { minQuantity: min, maxQuantity: max, price };
+      }
+      return null;
+    }).filter(Boolean);
+  };
+
+  const product = data?.payload;
+  const priceTiers = product ? parsePriceTiers(product.variable_pricing) : [];
+  const isLoadingPriceTiers = isLoading;
 
   // Build breadcrumb items
   const breadcrumbs = product
@@ -140,7 +160,7 @@ export default function ProductPage() {
       {/* Product Details */}
       <ProductDetail
         product={transformedProduct}
-        priceTiers={priceTiers || []}
+        priceTiers={priceTiers}
         isLoadingPriceTiers={isLoadingPriceTiers}
       />
 

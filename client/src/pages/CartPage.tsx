@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -21,13 +21,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 
 // Add this constant for the S3 bucket URL
@@ -46,7 +39,6 @@ export default function CartPage() {
     queryKey: ["cart"],
     refetchOnMount: "always", // Always refetch when component mounts
     queryFn: async () => {
-      console.log("Attempting to fetch cart data");
       try {
         const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}`);
 
@@ -164,15 +156,57 @@ export default function CartPage() {
 
   const isCartEmpty = !isLoadingCart && (!cartItems || cartItems.length === 0);
 
-  // Calculate cart totals (only for products that have been loaded)
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.product?.sp || 0) * item.quantity,
-    0
-  );
+  // Function to calculate price based on quantity and tiers
+  const calculateItemPrice = (product: any, quantity: number, source: string) => {
+    if (!product) return 0;
+    
+    // Get base price from tiers if available
+    let basePrice = product.sp;
+    
+    // Check if product has variable pricing
+    if (product.variable_pricing && Array.isArray(product.variable_pricing)) {
+      // Find the matching tier for current quantity
+      for (const tierObj of product.variable_pricing) {
+        const tierKey = Object.keys(tierObj)[0];
+        const tierPrice = tierObj[tierKey];
+        
+        if (tierKey.includes('>')) {
+          // Handle ">100" case
+          const minQuantity = parseInt(tierKey.replace('>', ''));
+          if (quantity >= minQuantity) {
+            basePrice = tierPrice;
+            break;
+          }
+        } else if (tierKey.includes('-')) {
+          // Handle "1-15" case
+          const [min, max] = tierKey.split('-').map(n => parseInt(n));
+          if (quantity >= min && quantity <= max) {
+            basePrice = tierPrice;
+            break;
+          }
+        }
+      }
+    }
+    
+    // Apply shipping source multiplier
+    const multiplier = 
+      source === "Ex-india custom" ? 1.15 :
+      source === "doorstep delivery" ? 1.25 : 1.0;
+    
+    return basePrice * multiplier;
+  };
 
-  const shipping = subtotal > 50 ? 0 : 5.99;
-  const tax = subtotal * 0.07; // 7% tax
-  const total = subtotal + shipping + tax;
+  // Calculate cart totals with dynamic pricing
+  const subtotal = cartItems.reduce((sum, item) => {
+    const itemPrice = calculateItemPrice(
+      item.product,
+      item.quantity,
+      item.source
+    );
+    return sum + (itemPrice * item.quantity);
+  }, 0);
+
+  const total = subtotal;
 
   const updateCartMutation = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
@@ -196,9 +230,59 @@ export default function CartPage() {
     },
   });
 
+  // Add a debounce timer ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Add local state to track input values for immediate UI updates
+  const [localQuantities, setLocalQuantities] = useState<Record<string, number>>({});
+  
+  // Initialize local quantities when cart items change
+  useEffect(() => {
+    const newLocalQuantities: Record<string, number> = {};
+    cartItems.forEach(item => {
+      if (!localQuantities[item.id]) {
+        newLocalQuantities[item.id] = item.quantity;
+      }
+    });
+    
+    if (Object.keys(newLocalQuantities).length > 0) {
+      setLocalQuantities(prev => ({ ...prev, ...newLocalQuantities }));
+    }
+  }, [cartItems]);
+  
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    updateCartMutation.mutate({ id, quantity: newQuantity });
+    
+    // Update local state immediately
+    setLocalQuantities(prev => ({ ...prev, [id]: newQuantity }));
+    
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // Set a new timer
+    debounceTimerRef.current = setTimeout(() => {
+      updateCartMutation.mutate({ id, quantity: newQuantity });
+    }, 500); // 500ms delay
+  };
+
+  const handleQuantityInputChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuantity = parseInt(e.target.value);
+    if (!isNaN(newQuantity) && newQuantity > 0) {
+      // Update local state immediately
+      setLocalQuantities(prev => ({ ...prev, [id]: newQuantity }));
+      
+      // Clear any existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      // Set a new timer
+      debounceTimerRef.current = setTimeout(() => {
+        updateCartMutation.mutate({ id, quantity: newQuantity });
+      }, 500); // 500ms delay
+    }
   };
 
   const handleRemoveItem = (id: string) => {
@@ -321,11 +405,13 @@ export default function CartPage() {
                             </a>
                           </Link>
                           <div className="text-lg font-bold">
-                            $
-                            {((item.product?.sp || 0) * item.quantity).toFixed(
-                              2
-                            )}
+                            ₹{(calculateItemPrice(item.product, item.quantity, item.source) * item.quantity).toFixed(2)}
                           </div>
+                        </div>
+
+                        {/* Unit price display */}
+                        <div className="text-sm text-gray-600">
+                          Unit price: ₹{calculateItemPrice(item.product, item.quantity, item.source).toFixed(2)}
                         </div>
 
                         {/* Add shipping source information */}
@@ -362,7 +448,13 @@ export default function CartPage() {
                               >
                                 <MinusIcon className="h-4 w-4" />
                               </button>
-                              <span className="px-3 py-1">{item.quantity}</span>
+                              <input
+                                type="number"
+                                min="1"
+                                value={localQuantities[item.id] || item.quantity}
+                                onChange={(e) => handleQuantityInputChange(item.id, e)}
+                                className="w-12 text-center border-0 p-1"
+                              />
                               <button
                                 className="px-2 py-1 hover:bg-gray-100"
                                 onClick={() =>
@@ -399,12 +491,8 @@ export default function CartPage() {
                     <span className="font-medium">Shopperr B2B</span>
                   </div>
                   <div className="text-xl font-bold">
-                    Subtotal (
-                    {cartItems.reduce((sum, item) => sum + item.quantity, 0)}{" "}
-                    items):
-                    <span className="text-amber-600 ml-2">
-                      ${subtotal.toFixed(2)}
-                    </span>
+                    Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items):
+                    <span className="text-amber-600 ml-2">₹{subtotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -437,12 +525,8 @@ export default function CartPage() {
                   </div> */}
 
                   <div className="text-xl font-bold mb-4">
-                    Subtotal (
-                    {cartItems.reduce((sum, item) => sum + item.quantity, 0)}{" "}
-                    items):
-                    <span className="text-amber-600 ml-2">
-                      ${subtotal.toFixed(2)}
-                    </span>
+                    Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items):
+                    <span className="text-amber-600 ml-2">₹{subtotal.toFixed(2)}</span>
                   </div>
 
                   <Accordion type="single" collapsible className="mb-4">
@@ -452,21 +536,9 @@ export default function CartPage() {
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span>Standard Shipping:</span>
-                            <span>
-                              {shipping === 0
-                                ? "FREE"
-                                : `$${shipping.toFixed(2)}`}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Estimated Tax:</span>
-                            <span>${tax.toFixed(2)}</span>
-                          </div>
                           <div className="flex justify-between font-bold">
                             <span>Order Total:</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>₹{total.toFixed(2)}</span>
                           </div>
                         </div>
                       </AccordionContent>

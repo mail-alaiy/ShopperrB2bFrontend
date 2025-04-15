@@ -221,6 +221,7 @@ export default function ProductDetail({
             quantity={quantity}
             setQuantity={setQuantity}
             isLoading={isLoadingPriceTiers}
+            shippingSource={shippingSource}
           />
 
           {/* Shipping Options */}

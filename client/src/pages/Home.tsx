@@ -1,22 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  StarIcon,
-  StarHalfIcon,
-  ShoppingCartIcon,
-  LaptopIcon,
-  PrinterIcon,
-  MonitorIcon,
-  HeadphonesIcon,
-  KeyboardIcon,
-  MouseIcon,
-  HardDriveIcon,
-  BarChartIcon,
-  BriefcaseIcon,
-  PackageIcon,
-  ChevronRightIcon,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,

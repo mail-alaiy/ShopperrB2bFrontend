@@ -34,6 +34,46 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Add this constant for the S3 bucket URL (same as CartPage)
 const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
 
+// Add this function to calculate price based on quantity and tiers - same as CartPage
+const calculateItemPrice = (product: any, quantity: number, source: string) => {
+  if (!product) return 0;
+  
+  // Get base price from tiers if available
+  let basePrice = product.sp;
+  
+  // Check if product has variable pricing
+  if (product.variable_pricing && Array.isArray(product.variable_pricing)) {
+    // Find the matching tier for current quantity
+    for (const tierObj of product.variable_pricing) {
+      const tierKey = Object.keys(tierObj)[0];
+      const tierPrice = tierObj[tierKey];
+      
+      if (tierKey.includes('>')) {
+        // Handle ">100" case
+        const minQuantity = parseInt(tierKey.replace('>', ''));
+        if (quantity >= minQuantity) {
+          basePrice = tierPrice;
+          break;
+        }
+      } else if (tierKey.includes('-')) {
+        // Handle "1-15" case
+        const [min, max] = tierKey.split('-').map(n => parseInt(n));
+        if (quantity >= min && quantity <= max) {
+          basePrice = tierPrice;
+          break;
+        }
+      }
+    }
+  }
+  
+  // Apply shipping source multiplier
+  const multiplier = 
+    source === "Ex-india custom" ? 1.15 :
+    source === "doorstep delivery" ? 1.25 : 1.0;
+  
+  return basePrice * multiplier;
+};
+
 export default function CheckoutPage() {
   const [location, navigate] = useLocation();
   const [activeStep, setActiveStep] = useState("shipping");
@@ -118,14 +158,18 @@ export default function CheckoutPage() {
   // Check if cart is empty
   const isCartEmpty = !isLoadingCart && (!cartItems || cartItems.length === 0);
 
-  // Calculate cart totals based on the new structure
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.product?.sp || 0) * item.quantity,
-    0
-  );
+  // Replace the subtotal calculation with the dynamic pricing calculation
+  const subtotal = cartItems.reduce((sum, item) => {
+    const itemPrice = calculateItemPrice(
+      item.product,
+      item.quantity,
+      item.source
+    );
+    return sum + (itemPrice * item.quantity);
+  }, 0);
 
-  const tax = subtotal * 0.07; // 7% tax
-  const total = subtotal + tax;
+  // Remove tax calculation and simply set total to subtotal
+  const total = subtotal;
 
   const handleSubmitShipping = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -528,8 +572,7 @@ export default function CheckoutPage() {
                           {item.product ? item.product.name : "Loading..."}
                         </div>
                         <div className="font-medium ml-2">
-                          $
-                          {((item.product?.sp || 0) * item.quantity).toFixed(2)}
+                          ₹{(calculateItemPrice(item.product, item.quantity, item.source) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     ))}
@@ -542,12 +585,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Estimated Tax</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
+                  <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -555,7 +593,7 @@ export default function CheckoutPage() {
 
               <div className="flex justify-between text-lg font-bold mb-6">
                 <span>Order Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
 
               <div className="text-xs text-gray-500">

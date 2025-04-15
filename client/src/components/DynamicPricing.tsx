@@ -11,6 +11,7 @@ interface DynamicPricingProps {
   quantity: number;
   setQuantity: (quantity: number) => void;
   isLoading: boolean;
+  shippingSource: string;
 }
 
 export default function DynamicPricing({
@@ -20,9 +21,26 @@ export default function DynamicPricing({
   quantity,
   setQuantity,
   isLoading,
+  shippingSource,
 }: DynamicPricingProps) {
   // Calculate savings percentage
   const savingsPercentage = Math.round((1 - salePrice / regularPrice) * 100);
+
+  // Get multiplier based on shipping source
+  const getShippingMultiplier = () => {
+    switch (shippingSource) {
+      case "ex-china":
+        return 1.0;
+      case "ex-india":
+        return 1.15;
+      case "doorstep":
+        return 1.25;
+      default:
+        return 1.0;
+    }
+  };
+
+  const shippingMultiplier = getShippingMultiplier();
 
   // Find the current price tier based on quantity
   const getCurrentPriceTier = () => {
@@ -34,7 +52,8 @@ export default function DynamicPricing({
   };
 
   const currentTier = getCurrentPriceTier();
-  const currentPrice = currentTier ? currentTier.price : salePrice;
+  const basePrice = currentTier ? currentTier.price : salePrice;
+  const currentPrice = basePrice * shippingMultiplier;
   const totalPrice = (currentPrice * quantity).toFixed(2);
 
   // Handle quantity change
@@ -94,10 +113,9 @@ export default function DynamicPricing({
 
       <div className="bg-gray-50 border border-gray-200 rounded p-4 my-4">
         <div className="font-bold mb-2">Volume Pricing</div>
-        <div className="grid grid-cols-4 gap-2 text-sm">
+        <div className="grid grid-cols-3 gap-2 text-sm">
           <div className="font-medium">Quantity</div>
           <div className="font-medium">Price Per Unit</div>
-          <div className="font-medium">Total</div>
           <div></div>
 
           {priceTiers.map((tier, index) => (
@@ -109,16 +127,7 @@ export default function DynamicPricing({
                       tier.maxQuantity === 999999 ? "+" : tier.maxQuantity
                     }`}
               </div>
-              <div>${tier.price.toFixed(2)}</div>
-              <div>
-                $
-                {(
-                  tier.price *
-                  (tier.minQuantity === tier.maxQuantity
-                    ? tier.minQuantity
-                    : tier.minQuantity)
-                ).toFixed(2)}
-              </div>
+              <div>₹{(tier.price * shippingMultiplier).toFixed(2)}</div>
               <div className="text-green-600">
                 {tier.savingsPercentage > 0
                   ? `Save ${tier.savingsPercentage}%`
@@ -170,13 +179,13 @@ export default function DynamicPricing({
           <div className="flex justify-between">
             <span className="font-medium">Your Price:</span>
             <span className="font-bold" id="calculated-price">
-              ${currentPrice.toFixed(2)} per unit
+              ₹{currentPrice.toFixed(2)} per unit
             </span>
           </div>
           <div className="flex justify-between mt-1">
             <span className="font-medium">Total:</span>
             <span className="font-bold text-xl" id="total-price">
-              ${totalPrice}
+              ₹{totalPrice}
             </span>
           </div>
         </div>
