@@ -26,7 +26,7 @@ function ProductHit({ hit }: { hit: any }) {
   const getFullImageUrl = (imagePath: string): string => {
     if (!imagePath) return "/placeholder-image.jpg";
     if (imagePath.startsWith("http")) return imagePath;
-    return `${S3_BUCKET_FILE_URL}/${imagePath}png`;
+    return `${S3_BUCKET_FILE_URL}/${imagePath}`;
   };
 
   return (
@@ -38,7 +38,7 @@ function ProductHit({ hit }: { hit: any }) {
         <a className="block sm:w-36 md:w-48 shrink-0">
           <div className="h-48 sm:h-36 md:h-40 flex items-center justify-center">
             <img
-              src={getFullImageUrl(hit.imgUrl?.[0]?.src)}
+              src={getFullImageUrl(hit.imgUrl?.[0])}
               alt={hit.name}
               className="max-h-full max-w-full object-contain"
             />
@@ -56,11 +56,11 @@ function ProductHit({ hit }: { hit: any }) {
           </a>
         </Link>
 
-        <div className="space-y-1 mb-3 text-sm text-gray-700">
+        {/* <div className="space-y-1 mb-3 text-sm text-gray-700">
           <div className="line-clamp-2 text-gray-600">
             {hit.description?.substring(0, 150)}...
           </div>
-        </div>
+        </div> */}
 
         <div className="flex flex-col sm:flex-row gap-2">
           <Link href={`/products/${hit._id}`}>
