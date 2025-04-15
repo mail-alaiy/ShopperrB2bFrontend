@@ -350,18 +350,6 @@ export default function CartPage() {
                 </Button>
               </Link>
             </div>
-
-            <Separator className="my-6" />
-
-            <div>
-              <h3 className="font-medium mb-3">
-                Sign in to see your saved items
-              </h3>
-              <div className="flex justify-center space-x-4">
-                <Button variant="outline">Sign in</Button>
-                <Button variant="secondary">Create an account</Button>
-              </div>
-            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
