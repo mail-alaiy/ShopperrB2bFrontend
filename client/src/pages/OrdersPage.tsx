@@ -61,7 +61,7 @@ export default function OrdersPage() {
       try {
         const response = await apiRequest(
           "GET",
-          `${import.meta.REACT_APP_CHECKOUT_API_URL}/orders`
+          `${import.meta.env.VITE_REACT_APP_ORDER_API_URL}/`
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch orders: ${response.status}`);
@@ -86,6 +86,9 @@ export default function OrdersPage() {
       order.mkpOrderId.toLowerCase().includes(trimmedSearchTerm)
     );
   }, [ordersData?.payload, searchTerm]);
+
+  // Add a separate check for when there are no orders from the API
+  const hasOrders = ordersData?.payload && ordersData.payload.length > 0;
 
   const getStatusIcon = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -213,6 +216,19 @@ export default function OrdersPage() {
                 <Button onClick={() => window.location.reload()}>Retry</Button>
               </CardContent>
             </Card>
+          ) : !hasOrders ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <PackageCheck className="h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-xl font-semibold mb-2">No orders yet</h3>
+                <p className="text-gray-500 mb-4 text-center">
+                  You haven't placed any orders yet. Start shopping to get your business supplies!
+                </p>
+                <Link href="/">
+                  <Button>Start Shopping</Button>
+                </Link>
+              </CardContent>
+            </Card>
           ) : filteredOrders.length > 0 ? (
             <div className="space-y-4">
               {filteredOrders.map((order: Order) => (
@@ -278,15 +294,11 @@ export default function OrdersPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <PackageCheck className="h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No orders found</h3>
+                <h3 className="text-xl font-semibold mb-2">No matching orders</h3>
                 <p className="text-gray-500 mb-4 text-center">
-                  {searchTerm
-                    ? `No orders matching "${searchTerm}"`
-                    : "You haven't placed any orders yet"}
+                  No orders matching "{searchTerm}"
                 </p>
-                <Link href="/">
-                  <Button>Shop Now</Button>
-                </Link>
+                <Button onClick={() => setSearchTerm("")}>Clear Search</Button>
               </CardContent>
             </Card>
           )}
