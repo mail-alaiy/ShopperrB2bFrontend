@@ -79,23 +79,16 @@ export default function OrdersPage() {
   const filteredOrders = useMemo(() => {
     if (!ordersData?.payload) return [];
 
-    // First filter out orders with status "UP" or "PU"
-    const visibleOrders = ordersData.payload.filter((order: Order) => {
-      const status = order.pStatus?.toUpperCase();
-      return status !== "UP" && status !== "PU";
-    });
-
-    // Then apply search term filtering
     const trimmedSearchTerm = searchTerm.trim().toLowerCase();
-    if (!trimmedSearchTerm) return visibleOrders;
+    if (!trimmedSearchTerm) return ordersData.payload;
 
-    return visibleOrders.filter((order: Order) =>
+    return ordersData.payload.filter((order: Order) =>
       order.mkpOrderId.toLowerCase().includes(trimmedSearchTerm)
     );
   }, [ordersData?.payload, searchTerm]);
 
-  // Update the hasOrders check to consider the filtered list
-  const hasOrders = filteredOrders.length > 0;
+  // Add a separate check for when there are no orders from the API
+  const hasOrders = ordersData?.payload && ordersData.payload.length > 0;
 
   const getStatusIcon = (status: string) => {
     switch (status?.toUpperCase()) {
