@@ -47,7 +47,7 @@ function ProductHit({ hit }: { hit: any }) {
       </Link>
 
       <div className="flex-grow">
-        <Link href={`/products/${hit._id}`}>
+        <Link href={`/products/${hit.objectID}`}>
           <a className="block">
             <h3 className="text-lg font-semibold text-blue-600 hover:underline mb-1">
               {hit.name}

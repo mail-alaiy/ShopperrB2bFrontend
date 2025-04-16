@@ -131,7 +131,7 @@ export default function CategorySidebar({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-gray-50 border-t">
+        {/* <div className="p-4 bg-gray-50 border-t">
           <div className="text-center">
             <Link href="/categories">
               <a className="text-blue-600 hover:underline font-semibold">
@@ -139,7 +139,7 @@ export default function CategorySidebar({
               </a>
             </Link>
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   );
