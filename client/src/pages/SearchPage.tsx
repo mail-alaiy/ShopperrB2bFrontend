@@ -63,7 +63,7 @@ function ProductHit({ hit }: { hit: any }) {
         </div> */}
 
         <div className="flex flex-col sm:flex-row gap-2">
-          <Link href={`/products/${hit._id}`}>
+          <Link href={`/products/${hit.objectID}`}>
             <a>
               <Button className="bg-amber-400 hover:bg-amber-500 text-gray-900">
                 <ShoppingCartIcon className="w-4 h-4 mr-2" />
