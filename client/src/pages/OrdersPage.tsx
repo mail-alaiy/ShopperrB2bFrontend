@@ -261,7 +261,7 @@ export default function OrdersPage() {
                         </p>
                       </div>
                       <div className="flex gap-2 mt-4 md:mt-0">
-                        <Link href={`/order/${order._id.$oid}`}>
+                        <Link href={`/orders/${order._id.$oid}`}>
                           <Button variant="outline" size="sm">
                             View Details
                           </Button>

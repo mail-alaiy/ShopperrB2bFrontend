@@ -238,9 +238,9 @@ export default function ProductDetail({
                   <SelectValue placeholder="Select shipping source" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ex-china">Ex-China (USD)</SelectItem>
+                  <SelectItem value="ex-china">Ex-China (RMB)</SelectItem>
                   <SelectItem value="ex-india">
-                    Ex-India Customs (USD)
+                    Ex-India Customs (INR)
                   </SelectItem>
                   {/* <SelectItem value="doorstep">
                     Doorstep Delivery (USD)

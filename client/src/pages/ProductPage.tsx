@@ -132,7 +132,6 @@ export default function ProductPage() {
     variations: [],
     features: [
       `Weight: ${product.weight} grams`,
-      `Dimensions: ${product.length}L × ${product.width}B × ${product.height}H`,
       `Product Code: ${product.code}`,
       `HSN Code: ${product.hsn}`,
     ].filter((feature) => !feature.includes("undefined")),

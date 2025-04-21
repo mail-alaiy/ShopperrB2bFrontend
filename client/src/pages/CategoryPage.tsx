@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import ProductListView from "@/components/ProductListView";
+import GridViewIcon from "@/components/icons/GridViewIcon";
+import ListViewIcon from "@/components/icons/ListViewIcon";
 
 // Add this constant for the S3 bucket URL
 const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
@@ -164,86 +166,22 @@ export default function CategoryPage() {
                     viewMode === "grid" ? "bg-gray-200" : "bg-white"
                   }`}
                   onClick={() => setViewMode("grid")}
+                  aria-label="Grid view"
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      x="1"
-                      y="1"
-                      width="6"
-                      height="6"
-                      rx="1"
-                      fill={viewMode === "grid" ? "#4B5563" : "#D1D5DB"}
-                    />
-                    <rect
-                      x="9"
-                      y="1"
-                      width="6"
-                      height="6"
-                      rx="1"
-                      fill={viewMode === "grid" ? "#4B5563" : "#D1D5DB"}
-                    />
-                    <rect
-                      x="1"
-                      y="9"
-                      width="6"
-                      height="6"
-                      rx="1"
-                      fill={viewMode === "grid" ? "#4B5563" : "#D1D5DB"}
-                    />
-                    <rect
-                      x="9"
-                      y="9"
-                      width="6"
-                      height="6"
-                      rx="1"
-                      fill={viewMode === "grid" ? "#4B5563" : "#D1D5DB"}
-                    />
-                  </svg>
+                  <GridViewIcon
+                    fillColor={viewMode === "grid" ? "#4B5563" : "#D1D5DB"}
+                  />
                 </button>
                 <button
                   className={`px-2 py-1 ${
                     viewMode === "list" ? "bg-gray-200" : "bg-white"
                   }`}
                   onClick={() => setViewMode("list")}
+                  aria-label="List view"
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      x="1"
-                      y="1"
-                      width="14"
-                      height="4"
-                      rx="1"
-                      fill={viewMode === "list" ? "#4B5563" : "#D1D5DB"}
-                    />
-                    <rect
-                      x="1"
-                      y="7"
-                      width="14"
-                      height="4"
-                      rx="1"
-                      fill={viewMode === "list" ? "#4B5563" : "#D1D5DB"}
-                    />
-                    <rect
-                      x="1"
-                      y="13"
-                      width="14"
-                      height="2"
-                      rx="1"
-                      fill={viewMode === "list" ? "#4B5563" : "#D1D5DB"}
-                    />
-                  </svg>
+                  <ListViewIcon
+                    fillColor={viewMode === "list" ? "#4B5563" : "#D1D5DB"}
+                  />
                 </button>
               </div>
             </div>
@@ -265,7 +203,7 @@ export default function CategoryPage() {
           ) : viewMode === "grid" ? (
             // Grid view
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {products.map((product) => (
+              {products.map((product: Product) => (
                 <div
                   key={product._id}
                   className="border rounded-md bg-white p-4 hover:shadow-md transition duration-200"
