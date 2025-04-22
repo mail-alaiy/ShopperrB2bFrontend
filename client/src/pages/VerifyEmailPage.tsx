@@ -22,7 +22,10 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (match && params?.token) {
-      const decodedToken = decodeURIComponent(params.token);
+      let decodedToken = decodeURIComponent(params.token);
+      if (decodedToken.startsWith("token=")) {
+        decodedToken = decodedToken.substring("token=".length);
+      }
       setToken(decodedToken);
     } else {
       setStatus("error");
