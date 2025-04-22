@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient"; // Assuming apiRequest is exported from here
 import { Spinner } from "@/components/ui/spinner"; // Assuming you have a Spinner component
 import { CheckCircle, XCircle, LogIn } from "lucide-react";
@@ -16,12 +16,22 @@ import { Button } from "@/components/ui/button";
 type VerificationStatus = "loading" | "success" | "error";
 
 export default function VerifyEmailPage() {
-  const params = useParams<{ token?: string }>();
-  const token = params.token;
+  const [location] = useLocation();
   const [status, setStatus] = useState<VerificationStatus>("loading");
   const [message, setMessage] = useState<string>("");
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const extractedToken = queryParams.get("token");
+    setToken(extractedToken);
+  }, [location.search]);
+
+  useEffect(() => {
+    if (token === null) {
+      return;
+    }
+
     if (!token) {
       setStatus("error");
       setMessage("No verification token provided in the URL.");
@@ -33,7 +43,7 @@ export default function VerifyEmailPage() {
       try {
         const response = await apiRequest(
           "GET",
-          `/api/verify-email/${token}` // Use relative path
+          `/api/verify-email/${token}`
         );
 
         const data = await response.json();
@@ -59,7 +69,7 @@ export default function VerifyEmailPage() {
     };
 
     verify();
-  }, [token]); // Rerun effect if token changes (though unlikely)
+  }, [token]);
 
   const renderContent = () => {
     switch (status) {
@@ -101,7 +111,6 @@ export default function VerifyEmailPage() {
               <CardDescription className="text-lg text-red-600">{message}</CardDescription>
             </CardHeader>
              <CardFooter className="flex justify-center">
-              {/* Optionally add a button to retry or go home */}
               <Button variant="outline" asChild>
                 <Link href="/">
                   Go to Homepage

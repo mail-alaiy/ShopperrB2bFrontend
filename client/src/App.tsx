@@ -46,7 +46,7 @@ function Router() {
       <Route path="/returns-policy" component={ReturnsPolicyPage} />
       <Route path="/privacy-policy" component={PrivacyPolicyPage} />
       <Route path="/terms-conditions" component={TermsAndConditionsPage} />
-      <Route path="/verify-email/:token" component={VerifyEmailPage} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route component={NotFound} />
     </Switch>
   );
