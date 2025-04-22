@@ -20,6 +20,10 @@ import PaymentPage from "./pages/PaymentPage";
 import SearchPage from "@/pages/SearchPage";
 import { SearchProvider } from "./context/SearchContext";
 import OrderDescriptionPage from "./pages/OrderDescriptionPage";
+import ShippingPolicyPage from "./pages/docs/ShippingPolicyPage";
+import ReturnsPolicyPage from "./pages/docs/ReturnsPolicyPage";
+import PrivacyPolicyPage from "./pages/docs/PrivacyPolicyPage";
+import TermsAndConditionsPage from "./pages/docs/TermsAndConditionsPage";
 
 function Router() {
   return (
@@ -37,6 +41,10 @@ function Router() {
       <Route path="/order/:orderId" component={PaymentPage} />
       <Route path="/order-success" component={OrderSuccessPage} />
       <Route path="/search" component={SearchPage} />
+      <Route path="/shipping-policy" component={ShippingPolicyPage} />
+      <Route path="/returns-policy" component={ReturnsPolicyPage} />
+      <Route path="/privacy-policy" component={PrivacyPolicyPage} />
+      <Route path="/terms-conditions" component={TermsAndConditionsPage} />
       <Route component={NotFound} />
     </Switch>
   );
