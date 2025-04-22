@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useRoute } from "wouter";
 import { apiRequest } from "@/lib/queryClient"; // Assuming apiRequest is exported from here
 import { Spinner } from "@/components/ui/spinner"; // Assuming you have a Spinner component
 import { CheckCircle, XCircle, LogIn } from "lucide-react";
@@ -16,16 +16,21 @@ import { Button } from "@/components/ui/button";
 type VerificationStatus = "loading" | "success" | "error";
 
 export default function VerifyEmailPage() {
-  const [location] = useLocation();
+  const [match, params] = useRoute("/verify-email/:token");
   const [status, setStatus] = useState<VerificationStatus>("loading");
   const [message, setMessage] = useState<string>("");
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const extractedToken = queryParams.get("token");
-    setToken(extractedToken);
-  }, [location.search]);
+    if (match && params?.token) {
+      const decodedToken = decodeURIComponent(params.token);
+      setToken(decodedToken);
+    } else {
+      setStatus("error");
+      setMessage("Invalid verification link or token missing.");
+      setToken(null);
+    }
+  }, [match, params]);
 
   useEffect(() => {
     if (token === null) {
@@ -34,7 +39,7 @@ export default function VerifyEmailPage() {
 
     if (!token) {
       setStatus("error");
-      setMessage("No verification token provided in the URL.");
+      setMessage("No verification token provided.");
       return;
     }
 
