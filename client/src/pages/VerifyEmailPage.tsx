@@ -48,7 +48,9 @@ export default function VerifyEmailPage() {
       try {
         const response = await apiRequest(
           "GET",
-          `/api/verify-email/${token}`
+          `${
+            import.meta.env.VITE_REACT_APP_CART_API_URL
+          }/api/verify-email/${token}`
         );
 
         const data = await response.json();
