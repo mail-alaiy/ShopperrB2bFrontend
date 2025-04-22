@@ -46,7 +46,9 @@ export default function VerifyEmailPage() {
       setStatus("loading");
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_REACT_APP_CART_API_URL}/api/verify-email/${token}`,
+          `${
+            import.meta.env.VITE_REACT_APP_USER_API_URL
+          }/verify-email/${token}`,
           {
             method: "GET",
             headers: {
