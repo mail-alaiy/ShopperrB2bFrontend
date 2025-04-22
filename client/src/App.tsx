@@ -24,6 +24,7 @@ import ShippingPolicyPage from "./pages/docs/ShippingPolicyPage";
 import ReturnsPolicyPage from "./pages/docs/ReturnsPolicyPage";
 import PrivacyPolicyPage from "./pages/docs/PrivacyPolicyPage";
 import TermsAndConditionsPage from "./pages/docs/TermsAndConditionsPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/returns-policy" component={ReturnsPolicyPage} />
       <Route path="/privacy-policy" component={PrivacyPolicyPage} />
       <Route path="/terms-conditions" component={TermsAndConditionsPage} />
+      <Route path="/verify-email/:token" component={VerifyEmailPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -55,7 +57,8 @@ function App() {
   const isCheckout = location.startsWith("/checkout");
   const isAuthPage = location.startsWith("/auth");
   const isOrderSuccess = location.startsWith("/order-success");
-  const hideHeaderFooter = isCheckout || isAuthPage || isOrderSuccess;
+  const isVerifyEmail = location.startsWith("/verify-email");
+  const hideHeaderFooter = isCheckout || isAuthPage || isOrderSuccess || isVerifyEmail;
 
   return (
     <SearchProvider>
