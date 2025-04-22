@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useRoute } from "wouter";
-import { apiRequest } from "@/lib/queryClient"; // Assuming apiRequest is exported from here
 import { Spinner } from "@/components/ui/spinner"; // Assuming you have a Spinner component
 import { CheckCircle, XCircle, LogIn } from "lucide-react";
 import {
@@ -46,11 +45,14 @@ export default function VerifyEmailPage() {
     const verify = async () => {
       setStatus("loading");
       try {
-        const response = await apiRequest(
-          "GET",
-          `${
-            import.meta.env.VITE_REACT_APP_CART_API_URL
-          }/api/verify-email/${token}`
+        const response = await fetch(
+          `${import.meta.env.VITE_REACT_APP_CART_API_URL}/api/verify-email/${token}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         const data = await response.json();
@@ -61,7 +63,7 @@ export default function VerifyEmailPage() {
         } else {
           setStatus("error");
           setMessage(
-            data.detail || "An error occurred during verification."
+            data.detail || data.msg || "An error occurred during verification."
           );
         }
       } catch (error) {
