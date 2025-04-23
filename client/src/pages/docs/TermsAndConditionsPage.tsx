@@ -7,9 +7,8 @@ export default function TermsAndConditionsPage() {
       <p className="text-sm text-gray-600 mb-8">Last Updated: 22nd Apr 2025</p>
       <div className="prose max-w-none">
         <p>
-          Welcome to www.shopperrglobal.com, www.b2b.shopperr.in &
-          www.shopperr.in! These Terms and Conditions ("Terms") govern your use
-          of our website www.shopperrglobal.com, www.b2b.shopperr.in or
+          Welcome to b2b.shopperr.in! These Terms and Conditions ("Terms") govern your use
+          of our website b2b.shopperr.in, b2b.shopperr.in or
           www.shopperr.in (the "Site") and the purchase of products from our
           Site. By accessing or using our Site, you agree to be bound by these
           Terms. If you do not agree to these Terms, please do not use the Site.
@@ -135,8 +134,8 @@ export default function TermsAndConditionsPage() {
         </h2>
         <p>
           All content on the Site, including text, graphics, logos, images, and
-          software, is the property of www.shopperrglobal.com,
-          www.b2b.shopperr.in or www.shopperr.in or its content suppliers and is
+          software, is the property of b2b.shopperr.in,
+          b2b.shopperr.in or www.shopperr.in or its content suppliers and is
           protected by intellectual property laws. You may not use, reproduce,
           modify, or distribute any content from the Site without our express
           written permission.
@@ -169,8 +168,8 @@ export default function TermsAndConditionsPage() {
         </h2>
         <p>
           Our Site may contain links to third-party websites or services that
-          are not owned or controlled by www.shopperrglobal.com,
-          www.b2b.shopperr.in or www.shopperr.in. We have no control over and
+          are not owned or controlled by b2b.shopperr.in,
+          b2b.shopperr.in or www.shopperr.in. We have no control over and
           assume no responsibility for the content, privacy policies, or
           practices of any third-party websites or services. Your use of such
           websites is at your own risk, and we recommend that you review their
@@ -193,7 +192,7 @@ export default function TermsAndConditionsPage() {
           11. Limitation of Liability
         </h2>
         <p>
-          In no event shall www.shopperrglobal.com, www.b2b.shopperr.in,
+          In no event shall b2b.shopperr.in, b2b.shopperr.in,
           www.shopperr.in, its directors, employees, or affiliates be liable for
           any indirect, incidental, special, or consequential damages arising
           out of or in connection with your use of the Site or products
@@ -212,7 +211,7 @@ export default function TermsAndConditionsPage() {
         </h2>
         <p>
           You agree to indemnify, defend, and hold harmless
-          www.shopperrglobal.com, www.b2b.shopperr.in, www.shopperr.in, its
+          b2b.shopperr.in, b2b.shopperr.in, www.shopperr.in, its
           affiliates, and their respective directors, officers, employees, and
           agents from any claims, liabilities, damages, losses, or expenses
           arising out of your use of the Site or your violation of these Terms.
@@ -254,8 +253,7 @@ export default function TermsAndConditionsPage() {
         <hr className="my-6" />
 
         <p>
-          By using www.shopperr.in, www.b2b.shopperr.in or
-          www.shopperrglobal.com, you acknowledge that you have read,
+          By using b2b.shopperr.in you acknowledge that you have read,
           understood, and agree to these Terms and Conditions.
         </p>
       </div>

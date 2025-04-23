@@ -50,6 +50,10 @@ export default function ProductPage() {
   const product = data?.payload;
   const priceTiers = product ? parsePriceTiers(product.variable_pricing) : [];
   const isLoadingPriceTiers = isLoading;
+  const options = product?.options;
+  const varients = product?.varients;
+
+  console.log(options, varients);
 
   // Build breadcrumb items
   const breadcrumbs = product
@@ -129,7 +133,6 @@ export default function ProductPage() {
     brand: product.pd_brand || "Generic",
     rating: 4.5, // Example default
     ratingCount: 120, // Example default
-    variations: [],
     features: [
       `Weight: ${product.weight} grams`,
       `Product Code: ${product.code}`,
@@ -161,6 +164,8 @@ export default function ProductPage() {
         product={transformedProduct}
         priceTiers={priceTiers}
         isLoadingPriceTiers={isLoadingPriceTiers}
+        options={options}
+        varients={varients}
       />
 
       {/* Product Detail Tabs */}

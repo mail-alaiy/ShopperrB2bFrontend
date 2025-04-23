@@ -6,10 +6,10 @@ export default function PrivacyPolicyPage() {
       <div className="prose max-w-none">
         <h2 className="text-2xl font-semibold mt-6 mb-3">1. Introduction</h2>
         <p>
-          Welcome to www.b2b.shopperr.in (“we,” “us,” or “our”). We value your
+          Welcome to b2b.shopperr.in (“we,” “us,” or “our”). We value your
           privacy and are committed to protecting your personal information.
           This privacy policy explains how we collect, use, share, and protect
-          your data when you visit or make a purchase from www.b2b.shopperr.in
+          your data when you visit or make a purchase from b2b.shopperr.in
           (the “Site”).
         </p>
         <p>
@@ -198,7 +198,7 @@ export default function PrivacyPolicyPage() {
         <hr className="my-6" />
 
         <p>
-          By using www.b2b.shopperr.in, you consent to the practices outlined in
+          By using b2b.shopperr.in, you consent to the practices outlined in
           this Privacy Policy.
         </p>
       </div>

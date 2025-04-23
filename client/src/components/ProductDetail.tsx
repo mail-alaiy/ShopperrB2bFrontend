@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -26,23 +26,58 @@ import {
   InfoIcon,
 } from "lucide-react";
 
+interface ProductOption {
+  name: string;
+  values: string[];
+}
+
+// Define a basic variant structure based on the *actual* API response
+interface ActualProductVariant {
+  option1: string; // Contains the combined option string like "Navy blue, S"
+  price?: number; // Add other relevant variant fields if needed
+  sku?: string;
+  vid?: number;
+  specId?: string;
+}
+
 interface ProductDetailProps {
   product: any;
   priceTiers: any[];
   isLoadingPriceTiers: boolean;
+  options?: ProductOption[];
+  varients?: ActualProductVariant[]; // Corrected: Use 'varients' and the actual interface
 }
 
 export default function ProductDetail({
   product,
   priceTiers,
   isLoadingPriceTiers,
+  options,
+  varients, // Corrected: Receive 'varients'
 }: ProductDetailProps) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [shippingSource, setShippingSource] = useState("ex-china");
-  const [selectedVariation, setSelectedVariation] = useState(
-    product.variations.find((v: any) => v.selected) || product.variations[0]
-  );
+  const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
+
+  // Initialize selectedOptions when options load
+  useEffect(() => {
+    const initialOptions: { [key: string]: string } = {};
+    if (options && options.length > 0) {
+      options.forEach(option => {
+        if (option.values && option.values.length > 0) {
+          initialOptions[option.name] = option.values[0]; // Default to the first value
+        }
+      });
+    }
+    setSelectedOptions(initialOptions);
+  }, [options]); // Re-run if options change
+
+  // Handler for when an option selection changes
+  const handleOptionChange = (optionName: string, value: string) => {
+    setSelectedOptions(prev => ({ ...prev, [optionName]: value }));
+    // TODO: Add logic here if price/image needs to update based on selection
+  };
 
   // Determine which price to display based on quantity and shipping source
   const calculatePrice = () => {
@@ -94,7 +129,30 @@ export default function ProductDetail({
   // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      const data = {
+      let variantIndex = -1;
+
+      // Check if options and varients are available
+      if (options && options.length > 0 && varients && varients.length > 0) {
+        // Construct the target option string from selectedOptions based on the order in the 'options' array
+        // Example: if options = [{name: "Color"}, {name: "Size"}] and selectedOptions = { Color: "Navy blue", Size: "S" }
+        // targetOptionString should become "Navy blue, S"
+        const targetOptionString = options
+          .map(option => selectedOptions[option.name]) // Get selected value for each option name in order
+          .join(", "); // Join with ", " to match the format in `option1`
+
+        // Find the index by comparing the constructed string with the 'option1' field
+        variantIndex = varients.findIndex(
+          (variant) => variant.option1 === targetOptionString
+        );
+
+      } else if (options && options.length > 0 && (!varients || varients.length === 0)) {
+        // Handle inconsistency: Options exist but Varients don't
+        console.error("Data inconsistency: Product has options but no varients defined.", { options, varients });
+        throw new Error("Product configuration error: Options defined without corresponding varients.");
+      }
+      // If there are no options, variantIndex remains -1, which is fine (no variant needed)
+
+      const data: { quantity: number; source: string; variantIndex?: number } = {
         quantity: quantity,
         source:
           shippingSource === "ex-china"
@@ -103,6 +161,24 @@ export default function ProductDetail({
             ? "Ex-india custom"
             : "doorstep delivery",
       };
+
+      // Only add variantIndex if options *exist* (meaning a variant selection was required)
+      if (options && options.length > 0) {
+        // If variantIndex is still -1 after the checks, it means the specific combination wasn't found
+        if (variantIndex === -1) {
+          // Construct the target string again for the error message
+           const targetOptionString = options
+             .map(option => selectedOptions[option.name])
+             .join(", ");
+          console.error("Selected options state:", selectedOptions);
+          console.error("Constructed target string:", targetOptionString);
+          console.error("Available varients[].option1 values:", varients?.map(v => v.option1));
+          throw new Error(`Selected product variant combination (${targetOptionString}) is not available.`);
+        }
+        data.variantIndex = variantIndex;
+      }
+
+      console.log(data)
 
       return apiRequest(
         "POST",
@@ -122,8 +198,8 @@ export default function ProductDetail({
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: `Failed to add item to cart: ${error.message}`,
+        title: "Error Adding to Cart", // More specific title
+        description: error.message || "Failed to add item to cart.", // Use error message
       });
     },
   });
@@ -184,30 +260,31 @@ export default function ProductDetail({
             ))}
           </ul>
 
-          {/* Product variations */}
-          {product.variations && product.variations.length > 0 && (
-            <div className="mt-4">
-              <div className="text-sm font-bold">Style:</div>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {product.variations.map((variation: any) => (
-                  <Button
-                    key={variation.id}
-                    variant={
-                      selectedVariation.id === variation.id
-                        ? "secondary"
-                        : "outline"
-                    }
-                    className={
-                      selectedVariation.id === variation.id
-                        ? "bg-gray-100 border-amber-400"
-                        : ""
-                    }
-                    onClick={() => setSelectedVariation(variation)}
+          {/* Product options selection */}
+          {options && options.length > 0 && Object.keys(selectedOptions).length > 0 && (
+            <div className="mt-4 space-y-3">
+              {options.map((option) => (
+                <div key={option.name}>
+                  <Label htmlFor={`option-${option.name}`} className="font-medium mb-1 block text-sm">
+                    {option.name}:
+                  </Label>
+                  <Select
+                    value={selectedOptions[option.name]}
+                    onValueChange={(value) => handleOptionChange(option.name, value)}
                   >
-                    {variation.name}
-                  </Button>
-                ))}
-              </div>
+                    <SelectTrigger id={`option-${option.name}`} className="w-full md:w-[250px]">
+                      <SelectValue placeholder={`Select ${option.name}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {option.values.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -5,7 +5,7 @@ export default function ShippingPolicyPage() {
       <p className="text-sm text-gray-600 mb-8">Last Updated: 18th Oct 2024</p>
       <div className="prose max-w-none">
         <p>
-          Thank you for shopping at www.shopperrglobal.com. We aim to deliver
+          Thank you for shopping at b2b.shopperr.in. We aim to deliver
           your orders as quickly and efficiently as possible. As part of our
           unique business model, we source products from both international
           suppliers and domestic warehouses. Please review the following shipping
@@ -205,7 +205,7 @@ export default function ShippingPolicyPage() {
         <hr className="my-6" />
 
         <p>
-          By placing an order on www.shopperrglobal.com, you agree to the terms
+          By placing an order on b2b.shopperr.in, you agree to the terms
           outlined in this Shipping Policy.
         </p>
       </div>
