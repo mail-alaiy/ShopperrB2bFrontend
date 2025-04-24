@@ -7,11 +7,7 @@ import {
   Trash2Icon,
   PlusIcon,
   MinusIcon,
-  ShoppingCartIcon,
-  ChevronRightIcon,
-  ShieldCheckIcon,
-  TruckIcon,
-  Clock3Icon,
+  ShoppingCartIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

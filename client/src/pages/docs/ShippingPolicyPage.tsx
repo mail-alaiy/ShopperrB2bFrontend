@@ -195,7 +195,7 @@ export default function ShippingPolicyPage() {
         <ul className="list-none pl-0">
           <li>
             <strong>Email:</strong>{" "}
-            <a href="mailto:support@shopperr.in">support@shopperr.in</a>
+            <a href="mailto:B2BSupport@shopperr.in">B2BSupport@shopperr.in</a>
           </li>
           <li>
             <strong>Business Hours:</strong> 10am to 6pm, Monday to Friday

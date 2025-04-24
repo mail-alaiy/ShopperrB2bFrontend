@@ -246,7 +246,7 @@ export default function TermsAndConditionsPage() {
         <ul className="list-none pl-0">
           <li>
             <strong>Email:</strong>{" "}
-            <a href="mailto:support@shopperr.in">support@shopperr.in</a>
+            <a href="mailto:B2BSupport@shopperr.in">B2BSupport@shopperr.in</a>
           </li>
         </ul>
 
