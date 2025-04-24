@@ -89,7 +89,7 @@ export default function CheckoutPage() {
     refetchOnMount: "always", // Always refetch when component mounts
     queryFn: async () => {
       try {
-        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}`);
+        const response = await apiRequest("GET", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/`);
         if (!response.ok)
           throw new Error(`Failed to fetch cart items: ${response.status}`);
         const data = await response.json();
