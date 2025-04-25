@@ -72,7 +72,7 @@ export default function CartPage() {
   useQuery({
     queryKey: ["products/multiple", productIds], // Use the extracted productIds
     enabled: productIds.length > 0, // Enable if there are any product IDs
-    refetchOnMount: true,
+    refetchOnMount: "always",
     queryFn: async () => {
       console.log("Fetching multiple products for IDs:", productIds);
       try {
@@ -197,16 +197,17 @@ export default function CartPage() {
   const total = subtotal; // Assuming no shipping/taxes for now
 
   // --- Mutations ---
-  // IMPORTANT: These mutations assume the backend API needs productId and variantIndex
+  // IMPORTANT: These mutations assume the backend API needs productId, variantIndex, and source
   // Adjust the `apiRequest` call structure based on actual backend requirements.
 
   const updateCartMutation = useMutation({
-    mutationFn: async ({ productId, variantIndex, quantity }: { productId: string; variantIndex: number | null; quantity: number }) => {
+    mutationFn: async ({ productId, variantIndex, quantity, source }: { productId: string; variantIndex: number | null; quantity: number; source: string }) => {
       // TODO: Confirm API endpoint and payload structure with backend
-      // Example: Maybe PATCH /items/:productId requires { variantIndex, quantity } in body?
+      // Example: Maybe PATCH /items/:productId requires { variantIndex, quantity, source } in body?
       return apiRequest("PATCH", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/items/${productId}`, {
-        variantIndex, // Sending variantIndex in the body (adjust if needed)
+        variantIndex,
         quantity,
+        source, // Added source
       });
     },
     onSuccess: () => {
@@ -217,12 +218,10 @@ export default function CartPage() {
   });
 
   const removeFromCartMutation = useMutation({
-    mutationFn: async ({ productId, variantIndex }: { productId: string; variantIndex: number | null }) => {
-      // TODO: Confirm API endpoint and payload structure with backend
-      // Example: Maybe DELETE /items/:productId requires { variantIndex } in body?
-      // Or maybe DELETE /items/:productId/:variantIndex ?
+    mutationFn: async ({ productId, variantIndex, source }: { productId: string; variantIndex: number | null; source: string }) => {
       return apiRequest("DELETE", `${import.meta.env.VITE_REACT_APP_CART_API_URL}/items/${productId}`, {
-         variantIndex // Sending variantIndex in the body (adjust if needed)
+         variantIndex,
+         source, // Added source
       });
     },
     onSuccess: () => {
@@ -256,7 +255,7 @@ export default function CartPage() {
   }, [cartItems]); // Dependency array includes cartItems
 
   // Use lineItemId for managing local state and triggering mutations
-  const handleQuantityChange = (lineItemId: string, productId: string, variantIndex: number | null, newQuantity: number) => {
+  const handleQuantityChange = (lineItemId: string, productId: string, variantIndex: number | null, source: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
     setLocalQuantities(prev => ({ ...prev, [lineItemId]: newQuantity }));
@@ -264,12 +263,12 @@ export default function CartPage() {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
     debounceTimerRef.current = setTimeout(() => {
-      // Pass productId and variantIndex to the mutation
-      updateCartMutation.mutate({ productId, variantIndex, quantity: newQuantity });
+      // Pass productId, variantIndex, and source to the mutation
+      updateCartMutation.mutate({ productId, variantIndex, source, quantity: newQuantity });
     }, 500);
   };
 
-  const handleQuantityInputChange = (lineItemId: string, productId: string, variantIndex: number | null, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleQuantityInputChange = (lineItemId: string, productId: string, variantIndex: number | null, source: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow empty input temporarily, but only mutate if valid number > 0
     if (value === "") {
@@ -283,7 +282,7 @@ export default function CartPage() {
       setLocalQuantities(prev => ({ ...prev, [lineItemId]: newQuantity }));
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(() => {
-        updateCartMutation.mutate({ productId, variantIndex, quantity: newQuantity });
+        updateCartMutation.mutate({ productId, variantIndex, source, quantity: newQuantity });
       }, 500);
     } else if (!isNaN(newQuantity) && newQuantity <= 0) {
         // Handle case where user types 0 or negative, maybe reset to 1 or keep NaN
@@ -292,9 +291,9 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = (productId: string, variantIndex: number | null) => {
-    // Pass productId and variantIndex to the mutation
-    removeFromCartMutation.mutate({ productId, variantIndex });
+  const handleRemoveItem = (productId: string, variantIndex: number | null, source: string) => {
+    // Pass productId, variantIndex, and source to the mutation
+    removeFromCartMutation.mutate({ productId, variantIndex, source });
   };
 
   return (
@@ -459,6 +458,7 @@ export default function CartPage() {
                                       item.lineItemId,
                                       item.productId,
                                       item.variantIndex,
+                                      item.source, // Pass source
                                       (localQuantities[item.lineItemId] || 1) - 1 // Use local quantity state
                                     )
                                   }
@@ -470,7 +470,7 @@ export default function CartPage() {
                                   type="number" // Keep type number for semantics
                                   min="1"
                                   value={displayQuantity} // Use displayQuantity which handles NaN
-                                  onChange={(e) => handleQuantityInputChange(item.lineItemId, item.productId, item.variantIndex, e)}
+                                  onChange={(e) => handleQuantityInputChange(item.lineItemId, item.productId, item.variantIndex, item.source, e)} // Pass source
                                   className="w-12 text-center border-0 p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" // Hide spinner arrows
                                   aria-label={`Quantity for ${item.product?.name ?? 'item'}${variantDetails ? ` (${variantDetails})` : ''}`}
                                 />
@@ -481,6 +481,7 @@ export default function CartPage() {
                                       item.lineItemId,
                                       item.productId,
                                       item.variantIndex,
+                                      item.source, // Pass source
                                       (localQuantities[item.lineItemId] || 0) + 1 // Use local quantity state
                                     )
                                   }
@@ -493,7 +494,7 @@ export default function CartPage() {
                             {/* Remove Button */}
                             <button
                               className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center"
-                              onClick={() => handleRemoveItem(item.productId, item.variantIndex)}
+                              onClick={() => handleRemoveItem(item.productId, item.variantIndex, item.source)} // Pass source
                             >
                               <Trash2Icon className="h-4 w-4 mr-1" /> Remove
                             </button>

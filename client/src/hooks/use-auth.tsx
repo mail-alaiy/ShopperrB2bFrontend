@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       toast({
         title: "Registration successful",
-        description: "Please login with your credentials",
+        description: "Please verify your email to continue",
       });
     },
     onError: (error: Error) => {

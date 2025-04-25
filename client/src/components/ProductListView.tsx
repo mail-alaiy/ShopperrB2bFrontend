@@ -38,14 +38,19 @@ export default function ProductListView({
                 <h3 className="text-lg font-semibold text-blue-600 hover:underline mb-1">
                   {product.name}
                 </h3>
-                <div className="mb-2 font-medium"></div>
+                {/* <div className="mb-2 font-medium">
+                   Price/Shipping info could go here if needed for list view
+                </div> */}
               </a>
             </Link>
 
             <div className="space-y-1 mb-3 text-sm text-gray-700">
-              <div className="line-clamp-2 text-gray-600">
-                {product.description?.substring(0, 150)}...
-              </div>
+              {product.description && ( // Add check for description existence
+                <div className="line-clamp-2 text-gray-600">
+                   {/* Use optional chaining and provide a default empty string */}
+                  {product.description?.substring(0, 150) ?? ""}...
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
@@ -62,21 +67,8 @@ export default function ProductListView({
         </div>
       ))}
 
-      {products.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-xl text-gray-600">
-            No products found in this category.
-          </p>
-          <p className="mt-2 text-gray-500">
-            Try a different category or check out our other offerings.
-          </p>
-          <Link href="/">
-            <a>
-              <Button className="mt-4">Continue Shopping</Button>
-            </a>
-          </Link>
-        </div>
-      )}
+      {/* Remove the "No products found" section from here, as it's handled in ProductDisplay */}
+      {/* {products.length === 0 && ( ... )} */}
     </div>
   );
 }

@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRoute, Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   ShoppingCartIcon,
   TruckIcon,
@@ -10,39 +9,30 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import ProductListView from "@/components/ProductListView";
 import GridViewIcon from "@/components/icons/GridViewIcon";
 import ListViewIcon from "@/components/icons/ListViewIcon";
+import ProductDisplay from "@/components/ProductDisplay";
+import { Product } from "@/types/product";
 
 // Add this constant for the S3 bucket URL
 const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
-
-// Add this interface to define the product data structure
-interface ProductImage {
-  position: number;
-  src: string;
-  varient_id: string;
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  handle: string;
-  price: number;
-  mrp: number;
-  sp: number;
-  quantity: number;
-  description: string;
-  imgUrl: ProductImage[];
-  brand?: string;
-  category: string;
-  code: string;
-}
 
 interface ProductResponse {
   message: string;
   payload: Product[];
 }
+
+// Helper function to check if an image URL is accessible
+const checkImageExists = (url: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+    // Add a timeout in case the request hangs indefinitely
+    setTimeout(() => resolve(false), 5000); // 5 second timeout
+  });
+};
 
 export default function CategoryPage() {
   const [matchCategory] = useRoute("/categories/:category");
@@ -61,18 +51,19 @@ export default function CategoryPage() {
   // Add page state inside the component
   const [page, setPage] = useState(1);
 
+  // State for products with validated images
+  const [validatedProducts, setValidatedProducts] = useState<Product[]>([]);
+  // State to track validation process
+  const [isValidatingImages, setIsValidatingImages] = useState(false);
+
   // Fetch products from the API
   const {
     data: productsData,
-    isLoading,
+    isLoading: isLoadingData,
     isFetching,
-  } = useQuery({
-    queryKey: ["products", "category", category, page], // Include page in the query key
+  } = useQuery<ProductResponse>({
+    queryKey: ["products", "category", category, page],
     queryFn: async () => {
-      // Clean up the category string by:
-      // 1. Replacing multiple hyphens with a single space
-      // 2. Removing any commas
-      // 3. Removing ampersands
       const cleanCategory = category
         .replace(/-+/g, " ")
         .replace(/,/g, "")
@@ -81,7 +72,7 @@ export default function CategoryPage() {
       const response = await fetch(
         `${import.meta.env.VITE_REACT_APP_PRODUCTS_API_URL}?query=${encodeURIComponent(
           cleanCategory
-        )}&limit=20&page=${page}` // Use the page state here
+        )}&limit=20&page=${page}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch products");
@@ -90,13 +81,47 @@ export default function CategoryPage() {
     },
   });
 
-  // Extract products from the response
-  const products = productsData?.payload || [];
+  const rawProducts = productsData?.payload || [];
+
+  // Effect to validate images when rawProducts change
+  useEffect(() => {
+    if (rawProducts.length === 0) {
+        setValidatedProducts([]);
+        setIsValidatingImages(false);
+        return;
+    }
+
+    const validate = async () => {
+        setIsValidatingImages(true);
+        const results = await Promise.allSettled(
+            rawProducts.map(async (product) => {
+                const imageUrl = getFullImageUrl(product.imgUrl?.[0]?.src);
+                // Don't bother checking the placeholder URL
+                if (imageUrl === "/placeholder-image.jpg") {
+                    return { product, exists: false };
+                }
+                const exists = await checkImageExists(imageUrl);
+                return { product, exists };
+            })
+        );
+
+        const valid = results
+            .filter((result): result is PromiseFulfilledResult<{ product: Product; exists: true }> =>
+                result.status === 'fulfilled' && result.value.exists
+            )
+            .map(result => result.value.product);
+
+        setValidatedProducts(valid);
+        setIsValidatingImages(false);
+    };
+
+    validate();
+  }, [rawProducts]); // Depend on rawProducts
 
   // Function to get the full image URL with S3 bucket prefix
   const getFullImageUrl = (imagePath: string) => {
     if (!imagePath) return "/placeholder-image.jpg";
-    if (imagePath.startsWith("http")) return imagePath; // Already a full URL
+    if (imagePath.startsWith("http")) return imagePath;
     return `${S3_BUCKET_FILE_URL}/${imagePath}png`;
   };
 
@@ -114,8 +139,12 @@ export default function CategoryPage() {
   const handlePageChange = (newPage: number) => {
     if (newPage < 1) return;
     setPage(newPage);
+    setValidatedProducts([]); // Clear validated products on page change
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Combine loading states
+  const isLoading = isLoadingData || isFetching || isValidatingImages;
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
@@ -140,18 +169,23 @@ export default function CategoryPage() {
           {/* Results Header */}
           <div className="bg-gray-100 p-3 rounded-md flex justify-between items-center mb-4">
             <p className="text-sm text-gray-600">
-              {isLoading ? (
-                "Loading..."
+              {isLoadingData || isFetching ? (
+                "Loading products..."
+              ) : isValidatingImages ? (
+                "Validating images..."
               ) : (
                 <>
-                  {products.length === 0 ? (
+                  {validatedProducts.length === 0 ? (
                     "No results found"
                   ) : (
-                    <>
+                     <>
                       Showing {(page - 1) * 20 + 1}-
-                      {(page - 1) * 20 + products.length} results for "
+                      {(page - 1) * 20 + validatedProducts.length} results for "
                       {displayCategory}"
                       {page > 1 && <span className="ml-1">- Page {page}</span>}
+                      {rawProducts.length !== validatedProducts.length && (
+                        <span className='text-xs ml-1 text-gray-500'>({rawProducts.length - validatedProducts.length} hidden due to image issues)</span>
+                      )}
                     </>
                   )}
                 </>
@@ -188,92 +222,12 @@ export default function CategoryPage() {
           </div>
 
           {/* Products Display */}
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="border rounded-md p-4">
-                  <Skeleton className="h-48 w-full mb-4" />
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2 mb-4" />
-                  <Skeleton className="h-6 w-1/3 mb-2" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ))}
-            </div>
-          ) : viewMode === "grid" ? (
-            // Grid view
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {products.map((product: Product) => (
-                <div
-                  key={product._id}
-                  className="border rounded-md bg-white p-4 hover:shadow-md transition duration-200"
-                >
-                  <Link href={`/products/${product._id}`}>
-                    <a className="block">
-                      <div className="h-48 flex items-center justify-center mb-4">
-                        <img
-                          src={getFullImageUrl(product.imgUrl[0]?.src)}
-                          alt={product.name}
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </div>
-                      <h3 className="text-base sm:text-lg font-semibold text-blue-600 hover:underline mb-1 line-clamp-2">
-                        {product.name}
-                      </h3>
-                      {/* <div className="mb-2">
-                        <span className="text-gray-500 line-through text-sm mr-2">
-                          ₹{product.mrp.toFixed(2)}
-                        </span>
-                        <span className="text-lg font-bold">
-                          ₹{product.sp.toFixed(2)}
-                        </span>
-                        {product.mrp > product.sp && (
-                          <span className="text-green-600 text-sm ml-2">
-                            Save{" "}
-                            {Math.round((1 - product.sp / product.mrp) * 100)}%
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-600 mb-2 flex items-center">
-                        <TruckIcon className="h-3 w-3 mr-1" />
-                        <span>Free shipping for businesses</span>
-                      </div> */}
-                    </a>
-                  </Link>
-                  <Link href={`/products/${product._id}`}>
-                    <a>
-                      <Button className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900">
-                        <ShoppingCartIcon className="w-4 h-4 mr-2" />
-                        View Product
-                      </Button>
-                    </a>
-                  </Link>
-                </div>
-              ))}
-
-              {products.length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-xl text-gray-600">
-                    No products found in this category.
-                  </p>
-                  <p className="mt-2 text-gray-500">
-                    Try a different category or check out our other offerings.
-                  </p>
-                  <Link href="/">
-                    <a>
-                      <Button className="mt-4">Continue Shopping</Button>
-                    </a>
-                  </Link>
-                </div>
-              )}
-            </div>
-          ) : (
-            // List view
-            <ProductListView
-              products={products}
-              getFullImageUrl={getFullImageUrl}
-            />
-          )}
+          <ProductDisplay
+            products={validatedProducts}
+            viewMode={viewMode}
+            isLoading={isLoading}
+            getFullImageUrl={getFullImageUrl}
+          />
         </div>
       </div>
 
@@ -284,7 +238,7 @@ export default function CategoryPage() {
             variant="outline"
             size="icon"
             onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1 || isLoading || isFetching}
+            disabled={page === 1 || isLoading}
             className="h-8 w-8"
           >
             <ChevronLeftIcon className="h-4 w-4" />
@@ -330,8 +284,7 @@ export default function CategoryPage() {
               className="h-8 w-8"
               disabled={
                 isLoading ||
-                isFetching ||
-                (productsData?.payload?.length || 0) < 20
+                (rawProducts.length < 20 && !isLoadingData && !isFetching)
               }
             >
               {page + 1}
@@ -346,8 +299,7 @@ export default function CategoryPage() {
             onClick={() => handlePageChange(page + 1)}
             disabled={
               isLoading ||
-              isFetching ||
-              (productsData?.payload?.length || 0) < 20
+              (rawProducts.length < 20 && !isLoadingData && !isFetching)
             }
             className="h-8 w-8"
           >

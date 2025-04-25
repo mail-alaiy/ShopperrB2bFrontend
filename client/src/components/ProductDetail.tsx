@@ -105,27 +105,6 @@ export default function ProductDetail({
     }
   };
 
-  // Format ratings display
-  const renderRatingStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <StarIcon key={`star-${i}`} className="h-4 w-4 fill-current" />
-      );
-    }
-
-    if (hasHalfStar) {
-      stars.push(
-        <StarHalfIcon key="half-star" className="h-4 w-4 fill-current" />
-      );
-    }
-
-    return stars;
-  };
-
   // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: async () => {
