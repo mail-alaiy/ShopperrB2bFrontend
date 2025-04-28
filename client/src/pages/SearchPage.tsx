@@ -44,7 +44,7 @@ export default function SearchPage() {
       {/* Use a key on InstantSearch if searchValue can be empty/null initially */}
       <InstantSearch
         searchClient={searchClient}
-        indexName="production_products"
+        indexName="product_index"
         key={searchValue || 'empty-search'}
         future={{ preserveSharedStateOnUnmount: true }}
       >
