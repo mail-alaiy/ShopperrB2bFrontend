@@ -14,6 +14,28 @@ interface AlgoliaProductHit {
   imgUrl?: string[];
 }
 
+interface RelatedProductImage {
+  position: number;
+  src: string;
+  varient_id: string; // Note: varient_id spelling in API
+}
+
+// Simplified interface for the related product data we need
+interface RelatedProductItem {
+  _id: string;
+  objectID: string; // Algolia objectID might be present
+  name: string;
+  handle: string;
+  imgUrl: RelatedProductImage[];
+  sp: number; // Sale price
+  mrp: number; // Regular price
+}
+
+interface RelatedProductResponse {
+  message: string;
+  payload: RelatedProductItem[];
+}
+
 export default function ValidatedProductHits() {
   const { hits } = useHits<AlgoliaProductHit>();
   const { status, results } = useInstantSearch();

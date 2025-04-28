@@ -157,11 +157,9 @@ export default function ProductDetail({
         data.variantIndex = variantIndex;
       }
 
-      console.log(data)
-
       return apiRequest(
         "POST",
-        `${import.meta.env.VITE_REACT_APP_CART_API_URL}/items/${product.id}`,
+        `${import.meta.env.VITE_REACT_APP_CART_API_URL}/items/${product.id.$oid}`,
         data
       );
     },
