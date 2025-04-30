@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface ProductImagesProps {
   images: string[];
@@ -25,8 +32,11 @@ export default function ProductImages({ images, name }: ProductImagesProps) {
 
     const checkAllImages = async () => {
       setIsLoading(true);
+      console.log("images", images);
       const results = await Promise.all(images.map(checkImage));
+      console.log("results", results);
       const validImages = results.filter((url): url is string => url !== null);
+      console.log("validImages", validImages);
       setAccessibleImages(validImages);
 
       if (validImages.length > 0) {
@@ -88,28 +98,47 @@ export default function ProductImages({ images, name }: ProductImagesProps) {
         )}
       </div>
 
-      {/* Image thumbnails */}
+      {/* Thumbnails - Use Carousel instead of Grid */}
       {accessibleImages.length > 1 && (
-        <div className="grid grid-cols-5 gap-2 mt-2">
-          {accessibleImages.map((image, index) => (
-            <div
-              key={index}
-              className={cn(
-                "border p-1 cursor-pointer",
-                selectedImageIndex === index
-                  ? "border-amber-400"
-                  : "border-gray-200 hover:border-amber-400"
-              )}
-              onClick={() => handleThumbnailClick(image, index)}
-            >
-              <img
-                src={image}
-                alt={`${name} - view ${index + 1}`}
-                className="w-full h-auto object-contain aspect-square"
-              />
-            </div>
-          ))}
-        </div>
+        <Carousel
+          opts={{
+            align: "start", // Align items to the start
+            loop: false, // Don't loop infinitely
+            // slidesToScroll: 1, // Scroll one item at a time (default)
+          }}
+          className="w-full mt-2" // Adjust width and margin as needed
+        >
+          <CarouselContent className="-ml-1"> {/* Negative margin to counteract item padding */}
+            {accessibleImages.map((image, index) => (
+              <CarouselItem key={index} className="pl-1 basis-1/4 md:basis-1/5"> {/* Padding and basis for item width */}
+                <div className="p-0"> {/* Optional: wrapper if needed */}
+                  <div // Keep the interactive thumbnail div
+                    className={cn(
+                      "border p-1 cursor-pointer aspect-square flex items-center justify-center", // Maintain aspect ratio and center content
+                      selectedImageIndex === index
+                        ? "border-amber-400"
+                        : "border-gray-200 hover:border-amber-400"
+                    )}
+                    onClick={() => handleThumbnailClick(image, index)}
+                  >
+                    <img
+                      src={image}
+                      alt={`${name} - view ${index + 1}`}
+                      className="object-contain h-full w-full" // Ensure image fits within the aspect-square container
+                    />
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {/* Optional: Add Previous/Next Buttons if needed */}
+          {accessibleImages.length > 5 && ( // Only show buttons if more images than fit
+              <>
+                <CarouselPrevious className="absolute left-[-10px] top-1/2 -translate-y-1/2" />
+                <CarouselNext className="absolute right-[-10px] top-1/2 -translate-y-1/2" />
+              </>
+           )}
+        </Carousel>
       )}
     </>
   );

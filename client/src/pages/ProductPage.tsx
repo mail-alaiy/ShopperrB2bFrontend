@@ -7,6 +7,7 @@ import FrequentlyBoughtTogether from "@/components/FrequentlyBoughtTogether";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { getFullImageUrl } from "../utils/imageUtils";
 
 // Add this constant for the S3 bucket URL
 const S3_BUCKET_FILE_URL = "https://shopperrcdn.shopperr.in";
@@ -189,10 +190,7 @@ export default function ProductPage() {
     regularPrice: product.mrp,
     salePrice: product.sp,
     images: Array.isArray(product.imgUrl) ? product.imgUrl.map(
-      (img: RelatedProductImage) =>
-        `${S3_BUCKET_FILE_URL}/${img.src.endsWith(',') ? img.src.slice(0, -1) : img.src}${
-          (img.src.endsWith(".png") || img.src.includes('.')) ? "" : ".png"
-        }`
+      (img: RelatedProductImage) => getFullImageUrl(img.src)
     ) : [],
     brand: product.pd_brand || "Generic",
     rating: 4.5, // Example default

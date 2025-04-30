@@ -204,6 +204,8 @@ export default function ProductDetail({
   const currentPrice = calculatePrice();
   const totalPrice = (currentPrice * quantity).toFixed(2);
 
+  console.log("product", product.images);
+
   return (
     <div className="flex flex-col md:flex-row">
       {/* Product images section - sticky on scroll */}
