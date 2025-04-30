@@ -40,9 +40,6 @@ export default function RelatedProductCard({ product }: RelatedProductCardProps)
           <h3 className="text-xs font-medium text-gray-800 hover:text-blue-600 mb-1 line-clamp-2 leading-tight h-8">
             {product.name}
           </h3>
-          <div className="mt-1">
-            <span className="text-sm font-semibold text-gray-900">₹{product.sp?.toFixed(0)}</span>
-          </div>
         </a>
       </Link>
       <Link href={productLink} className="mt-2 block pt-1">

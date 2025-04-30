@@ -57,7 +57,7 @@ export default function ProductDetail({
 }: ProductDetailProps) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
-  const [shippingSource, setShippingSource] = useState("ex-china");
+  const [shippingSource, setShippingSource] = useState("ex-india");
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
 
   // Initialize selectedOptions when options load
@@ -292,7 +292,7 @@ export default function ProductDetail({
                   <SelectValue placeholder="Select shipping source" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ex-china">Ex-China (RMB)</SelectItem>
+                  {/* <SelectItem value="ex-china">Ex-China (RMB)</SelectItem> */}
                   <SelectItem value="ex-india">
                     Ex-India Customs (INR)
                   </SelectItem>
