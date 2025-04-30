@@ -21,7 +21,7 @@ interface ProductHitProps {
 export default function ProductHit({ hit }: ProductHitProps) {
   // Get the image URL - it should be valid at this point
   // Access the correct image field from your Algolia index (e.g., hit.image, hit.imgUrl[0])
-  const imageUrl = getFullImageUrl(hit.imgUrl?.[0]);
+  const imageUrl = getFullImageUrl(hit.imgUrl?.[0]?.src);
 
   return (
     <div

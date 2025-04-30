@@ -57,7 +57,7 @@ export default function ValidatedProductHits() {
           const results = await Promise.allSettled(
             hits.map(async (hit) => {
               // Get the specific image URL field from your Algolia hit object
-              const imageUrl = getFullImageUrl(hit.imgUrl?.[0]);
+              const imageUrl = getFullImageUrl(hit.imgUrl?.[0]?.src);
               const exists = await checkImageExists(imageUrl);
               return { hit, exists };
             })
